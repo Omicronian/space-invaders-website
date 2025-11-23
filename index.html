@@ -1,131 +1,14 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="utf-8">
-  <title>HOTSYSTEMS.COM - Lrrr Attacks!</title>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Space Invaders - Phaser 3</title>
   <script src="https://cdn.jsdelivr.net/npm/phaser@3.80.1/dist/phaser.min.js"></script>
-  <style>
-    body { 
-      margin: 0; 
-      background: #000; 
-      overflow: hidden; 
-      font-family: 'Courier New', monospace;
-    }
-  </style>
+  <link rel="stylesheet" href="src/style.css">
 </head>
 <body>
-
-  <!-- Lrrr boss in top-right -->
-  <img src="Lrrr2.png" 
-       alt="Lrrr" 
-       style="position:fixed; top:10px; right:10px; width:130px; height:auto; z-index:9999; pointer-events:none; border:4px solid #00ff00; border-radius:50%; box-shadow: 0 0 30px #00ff00;">
-
-  <script>
-    const config = {
-      type: Phaser.AUTO,
-      width: 800,
-      height: 600,
-      backgroundColor: '#000011',
-      physics: { default: 'arcade' },
-      scene: { preload, create, update }
-    };
-
-    let game = new Phaser.Game(config);
-    let player, bullets, invaders, cursors;
-
-    function preload() {
-      // Player ship
-      this.load.image('ship', 'https://labs.phaser.io/assets/sprites/ship.png');
-      this.load.image('bullet', 'https://labs.phaser.io/assets/sprites/bullet.png');
-      
-      // Your Lrrr spaceship from your GitHub repo
-      this.load.image('lrrrship', 'Lrrr_Spaceship1.png');
-    }
-
-    function create() {
-      // Title
-      this.add.text(400, 80, 'HOTSYSTEMS.COM\nLrrr Attacks!', {
-        font: '38px Courier', fill: '#00ff00', align: 'center'
-      }).setOrigin(0.5).setStroke('#000', 4);
-
-      // Player
-      player = this.physics.add.sprite(400, 540, 'ship').setScale(1.8);
-      player.setCollideWorldBounds(true);
-
-      // Bullets
-      bullets = this.physics.add.group();
-
-      // Four Lrrr spaceships in formation
-      invaders = this.physics.add.group();
-      const positions = [
-        { x: 200, y: 200 },
-        { x: 400, y: 200 },
-        { x: 600, y: 200 },
-        { x: 400, y: 300 }
-      ];
-
-      positions.forEach(pos => {
-        let ship = invaders.create(pos.x, pos.y, 'lrrrship')
-          .setScale(2.5)
-          .setInteractive()
-          .setTint(0x00ff00);
-        
-        // Destroy on click/shoot
-        ship.on('pointerdown', () => explodeShip(ship));
-      });
-
-      // Controls
-      cursors = this.input.keyboard.createCursorKeys();
-      this.input.keyboard.on('keydown-SPACE', shoot);
-      this.input.on('pointerdown', (pointer) => {
-        if (pointer.y > 100) shoot(); // Tap anywhere to shoot
-      });
-
-      // Instructions
-      this.add.text(10, 10, '←→ MOVE    SPACE/TAP = FIRE', {
-        font: '16px Courier', fill: '#00ff00'
-      });
-    }
-
-    function update() {
-      player.setVelocityX(0);
-      if (cursors.left.isDown) player.setVelocityX(-380);
-      if (cursors.right.isDown) player.setVelocityX(380);
-    }
-
-    function shoot() {
-      let bullet = bullets.create(player.x, player.y - 30, 'bullet');
-      bullet.setVelocityY(-800);
-      bullet.checkWorldBounds = true;
-      bullet.outOfBoundsKill = true;
-
-      // Collision: bullet hits Lrrr ship
-      this.physics.overlap(bullet, invaders, (b, ship) => {
-        b.destroy();
-        explodeShip(ship);
-      });
-    }
-
-    function explodeShip(ship) {
-      if (ship.destroyed) return;
-      ship.destroyed = true;
-
-      // Explosion effect
-      let boom = this.add.circle(ship.x, ship.y, 10, 0xff0000);
-      this.tweens.add({
-        targets: boom,
-        radius: 120,
-        alpha: 0,
-        duration: 600,
-        ease: 'Power2',
-        onComplete: () => boom.destroy()
-      });
-
-      // Flash screen green
-      this.cameras.main.flash(300, 0, 255, 0);
-
-      ship.destroy();
-    }
-  </script>
+  <div id="phaser-example"></div>
+  <script type="module" src="src/main.ts"></script>
 </body>
 </html>
