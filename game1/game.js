@@ -3,28 +3,14 @@ class GameScene extends Phaser.Scene {
     super({ key: 'GameScene' });
   }
 
-preload() {
-  // Background
-  this.load.image('sky', 'https://labs.phaser.io/assets/skies/space3.png');
-  
-  // Player ships (multiple variants)
-  this.load.image('ship', 'https://labs.phaser.io/assets/sprites/space-baddie.png');
-  this.load.image('ship2', 'https://labs.phaser.io/assets/sprites/space-baddie.png');
-  this.load.image('ship3', 'https://labs.phaser.io/assets/sprites/space-baddie.png');
-  
-  // Invader spritesheet
-  this.load.spritesheet('invader', 'https://labs.phaser.io/assets/sprites/space-invaders.png', { frameWidth: 48, frameHeight: 32 });
-  
-  // Lasers
-  this.load.image('laser', 'https://labs.phaser.io/assets/particles/blue.png');
-  this.load.image('laser2', 'https://labs.phaser.io/assets/particles/red.png');
-  
-  // Explosion spritesheet
-  this.load.spritesheet('kaboom', 'https://labs.phaser.io/assets/sprites/explosion.png', { frameWidth: 64, frameHeight: 64 });
-  
-  // Power-up
-  this.load.image('power-up', 'https://labs.phaser.io/assets/sprites/star.png');
-}
+  preload() {
+    this.load.image('sky', 'https://labs.phaser.io/assets/skies/space3.png');
+    this.load.image('logo', 'https://labs.phaser.io/assets/sprites/phaser3-logo.png');
+    this.load.image('ship', 'https://labs.phaser.io/assets/sprites/space-baddie.png');
+    this.load.image('laser', 'https://labs.phaser.io/assets/particles/blue.png');
+    this.load.spritesheet('invader', 'https://labs.phaser.io/assets/sprites/space-invaders.png', { frameWidth: 48, frameHeight: 32 });
+    this.load.spritesheet('kaboom', 'https://labs.phaser.io/assets/particles/explosion.png', { frameWidth: 128, frameHeight: 128 });
+  }
 
   create() {
     this.add.image(400, 300, 'sky');
