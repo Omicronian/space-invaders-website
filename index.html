@@ -5,15 +5,15 @@
     <title>Lrrr - When Aliens Attack 2</title>
     <script src="https://cdn.jsdelivr.net/npm/phaser@3.80.1/dist/phaser.min.js"></script>
     <style>
-        body { margin:0; background:#000022; overflow:hidden; }
+        body { margin:0; background:#000022; overflow:hidden; font-family: Arial; }
     </style>
 </head>
 <body>
 
-<!-- Lrrr overseeing the invasion -->
+<!-- Lrrr in the corner — always visible -->
 <img src="Lrrr2.png" 
-     alt="Lrrr - Ruler of Omicron Persei 8" 
-     style="position:fixed; top:10px; right:10px; width:150px; height:auto; z-index:9999; pointer-events:none; filter: drop-shadow(0 0 15px #ff4400);">
+     alt="Lrrr" 
+     style="position:fixed; top:12px; right:12px; width:160px; height:auto; z-index:9999; pointer-events:none; filter: drop-shadow(0 0 15px #f00);">
 
 <script>
 const config = {
@@ -25,72 +25,30 @@ const config = {
     scene: { preload, create, update }
 };
 
-let game, player, bullets, invaders, cursors, score = 0, scoreText;
+let game = new Phaser.Game(config);
+let player, bullets, invaders, cursors, score = 0, scoreText;
 
 function preload() {
     this.load.image('ship', 'https://labs.phaser.io/assets/sprites/ship.png');
     this.load.image('bullet', 'https://labs.phaser.io/assets/sprites/bullet.png');
-    this.load.image('lrrr-invader', 'Lrrr2.png');
+    // We no longer load Lrrr2.png here → avoids any loading/blocking issues
 }
 
 function create() {
-    game = this;  // For global scene access
+    // Title
+    this.add.text(400, 70, 'WHEN ALIENS ATTACK 2', {
+        font: '52px Arial Black', fill: '#ff0044', stroke: '#00ff00', strokeThickness: 8, align: 'center'
+    }).setOrigin(0.5);
 
-    // Title - perfectly centered
-    this.add.text(400, 70, 'Lrrr\nWhen Aliens Attack 2', {
-        font: '52px Arial Black',
-        fill: '#ff0044',
-        stroke: '#00ff00',
-        strokeThickness: 8
-    }).setOrigin(0.5).setDepth(20);
+    this.add.text(400, 140, 'Stop Lrrr and the Omicronian fleet!', {
+        font: '24px Courier New', fill: '#00ff99'
+    }).setOrigin(0.5);
 
-    this.add.text(400, 140, 'Defend Earth from Omicron Persei 8!', {
-        font: '24px Courier New',
-        fill: '#00ff99'
-    }).setOrigin(0.5).setDepth(15);
-
-    // Player ship - centered & high depth
-    player = this.physics.add.sprite(400, 540, 'ship').setOrigin(0.5).setScale(2).setDepth(10);
+    // Player ship
+    player = this.physics.add.sprite(400, 540, 'ship').setScale(2).setDepth(10);
     player.setCollideWorldBounds(true);
 
-    // Bullets group
+    // Bullets
     bullets = this.physics.add.group();
 
-    // Lrrr fleet - positioned higher to avoid player overlap
-    invaders = this.physics.add.group();
-    const rowTints = [0xffaa00, 0xff8800, 0xff4400, 0xcc0000, 0xaa0000];
-    for (let row = 0; row < 5; row++) {
-        for (let col = 0; col < 9; col++) {
-            let x = 60 + col * 78;
-            let y = 150 + row * 65;
-            let lrrr = invaders.create(x, y, 'lrrr-invader')
-                .setOrigin(0.5)
-                .setScale(0.24)
-                .setTint(rowTints[row])
-                .setDepth(1);
-            
-            // Gentle bob - smaller amplitude
-            this.tweens.add({
-                targets: lrrr,
-                y: y + 10,
-                duration: 2500,
-                yoyo: true,
-                repeat: -1,
-                ease: 'Sine.easeInOut',
-                delay: row * 150 + col * 30
-            });
-        }
-    }
-
-    // Physics overlap - set ONCE here (fixes multiple listener bug)
-    this.physics.add.overlap(bullets, invaders, hitInvader, null, this);
-
-    // Controls
-    cursors = this.input.keyboard.createCursorKeys();
-    this.input.keyboard.on('keydown-SPACE', shoot);
-
-    // HUD
-    scoreText = this.add.text(20, 20, 'Score: 0', {
-        font: '28px Courier New',
-        fill: '#00ff00'
-    }).
+    // Draw Lrrr faces directly with graphics (so no image
