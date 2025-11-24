@@ -1,42 +1,39 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Lrrr's Space Invaders - Hotsystems.com</title>
+  <script src="https://cdn.jsdelivr.net/npm/phaser@3.80.1/dist/phaser.min.js"></script>
+  <style>
+    body { 
+      margin: 0; 
+      background: linear-gradient(180deg, #000011 0%, #000033 100%); 
+      overflow: hidden; 
+      font-family: 'Courier New', monospace; 
+      color: #00ff00;
+    }
+    canvas { display: block; margin: 0 auto; border: 4px solid #00ff00; box-shadow: 0 0 50px #00ff00; }
+  </style>
+</head>
+<body>
+  <script>
+    const config = {
+      type: Phaser.AUTO,
+      width: 800,
+      height: 600,
+      backgroundColor: '#000011',
+      physics: { default: 'arcade', arcade: { gravity: { y: 0 } } },
+      scene: { preload, create, update }
+    };
 
-<!doctype html>
-<meta charset="utf8">
-<style>
-body,
-html {
-  background-color: black;
-  width: 100%;
-  height: 100%;
-  overflow: hidden;
-}
+    const game = new Phaser.Game(config);
+    let player, bullets, invaders, cursors, scoreText, score = 0;
 
-* {
-  -webkit-touch-callout: none;
-  -webkit-user-select: none;
-  -khtml-user-select: none;
-  -moz-user-select: none;
-  -ms-user-select: none;
-  user-select: none;
-}
-
-canvas {
-  display: block;
-  margin: auto;
-  position: absolute;
-  top: 0;
-  left: 0;
-  right: 0;
-  bottom: 0;
-  image-rendering: optimizeSpeed;
-  image-rendering: -moz-crisp-edges;
-  image-rendering: -webkit-optimize-contrast;
-  image-rendering: optimize-contrast;
-}
-</style>
-
-<div id="game"></div>
-
-<script type="module">
-const { startGame } = await import('./index.js')
-startGame({ selector: '#game', autoPlay: false, gameTitle: "" })
-</script>
+    function preload() {
+      // Player ship
+      this.load.image('ship', 'https://labs.phaser.io/assets/sprites/ship.png');
+      this.load.image('bullet', 'https://labs.phaser.io/assets/sprites/bullet.png');
+      
+      // Your Lrrr spaceship from repo (invaders)
+      this.load.image('lrrrship', 'Lrrr_Spaceship
