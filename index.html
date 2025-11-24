@@ -3,50 +3,39 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Lrrr Attacks! - Hotsystems.com</title>
+  <title>Lrrr Invades - Hotsystems.com</title>
   <style>
-    body {
+    body, html {
       margin: 0;
-      background: #000;
+      padding: 0;
+      height: 100%;
       overflow: hidden;
+      background: #000;
+      cursor: pointer;
       font-family: 'Courier New', monospace;
-      color: #00ff00;
     }
+    .slideshow {
+      position: absolute;
+      top: 0; left: 0;
+      width: 100%;
+      height: 100%;
+      background-size: contain;
+      background-position: center;
+      background-repeat: no-repeat;
+      opacity: 0;
+      transition: opacity 1.2s ease-in-out;
+    }
+    .active { opacity: 1; }
     .title {
       position: absolute;
-      top: 20px;
+      top: 30px;
       left: 50%;
       transform: translateX(-50%);
+      color: #00ff00;
       font-size: 48px;
-      font-weight: bold;
-      text-shadow: 0 0 20px #00ff00;
-      z-index: 100;
-    }
-    .ship1 {
-      position: fixed;
-      top: 80px;
-      right: 50px;
-      width: 280px;
-      z-index: 99;
+      text-shadow: 0 0 30px #00ff00;
+      z-index: 10;
       pointer-events: none;
-      animation: fly1 12s infinite linear;
-    }
-    .ship2 {
-      position: fixed;
-      bottom: 100px;
-      left: 30px;
-      width: 320px;
-      z-index: 98;
-      pointer-events: none;
-      animation: fly2 15s infinite linear;
-    }
-    @keyframes fly1 {
-      0%   { transform: translate(0, 0) rotate(0deg); }
-      100% { transform: translate(-100vw, -50px) rotate(-10deg); }
-    }
-    @keyframes fly2 {
-      0%   { transform: translate(0, 0) rotate(5deg); }
-      100% { transform: translate(100vw, 80px) rotate(15deg); }
     }
   </style>
 </head>
@@ -54,14 +43,23 @@
 
   <div class="title">HOTSYSTEMS.COM<br><span style="font-size:38px;">Lrrr Attacks!</span></div>
 
-  <!-- Your two animated Omicronian spaceships -->
-  <img src="Lrrr_Spaceship1.webp" alt="Lrrr Ship 1" class="ship1">
-  <img src="Lrrr_Spaceship2.webp" alt="Lrrr Ship 2" class="ship2">
+  <!-- Two full-screen animated ships -->
+  <div class="slideshow active"   style="background-image: url('Lrrr_Spaceship1.webp');"></div>
+  <div class="slideshow"          style="background-image: url('Lrrr_Spaceship2.webp');"></div>
 
-  <div style="position:absolute; bottom:20px; left:50%; transform:translateX(-50%); text-align:center; z-index:100;">
-    <p style="font-size:24px; margin:10px;">The Omicronian fleet has arrived.</p>
-    <p style="font-size:18px; color:#0f0;">Resistance is futile.</p>
-  </div>
+  <script>
+    const slides = document.querySelectorAll('.slideshow');
+    let current = 0;
+
+    document.body.addEventListener('click', () => {
+      slides[current].classList.remove('active');
+      current = (current + 1) % slides.length;
+      slides[current].classList.add('active');
+    });
+
+    // Optional: auto-cycle every 8 seconds
+    // setInterval(() => document.body.click(), 8000);
+  </script>
 
 </body>
 </html>
