@@ -1,3 +1,67 @@
-<img src="https://i.imgur.com/3qK8vL2.webp" 
-     alt="Lrrr's Omicronian Ship" 
-     style="position:fixed; top:20px; right:20px; width:180px; z-index:9999; pointer-events:none;">
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Lrrr Attacks! - Hotsystems.com</title>
+  <style>
+    body {
+      margin: 0;
+      background: #000;
+      overflow: hidden;
+      font-family: 'Courier New', monospace;
+      color: #00ff00;
+    }
+    .title {
+      position: absolute;
+      top: 20px;
+      left: 50%;
+      transform: translateX(-50%);
+      font-size: 48px;
+      font-weight: bold;
+      text-shadow: 0 0 20px #00ff00;
+      z-index: 100;
+    }
+    .ship1 {
+      position: fixed;
+      top: 80px;
+      right: 50px;
+      width: 280px;
+      z-index: 99;
+      pointer-events: none;
+      animation: fly1 12s infinite linear;
+    }
+    .ship2 {
+      position: fixed;
+      bottom: 100px;
+      left: 30px;
+      width: 320px;
+      z-index: 98;
+      pointer-events: none;
+      animation: fly2 15s infinite linear;
+    }
+    @keyframes fly1 {
+      0%   { transform: translate(0, 0) rotate(0deg); }
+      100% { transform: translate(-100vw, -50px) rotate(-10deg); }
+    }
+    @keyframes fly2 {
+      0%   { transform: translate(0, 0) rotate(5deg); }
+      100% { transform: translate(100vw, 80px) rotate(15deg); }
+    }
+  </style>
+</head>
+<body>
+
+  <div class="title">HOTSYSTEMS.COM<br><span style="font-size:38px;">Lrrr Attacks!</span></div>
+
+  <!-- Your two animated Omicronian spaceships -->
+  <img src="Lrrr_Spaceship1.webp" alt="Lrrr Ship 1" class="ship1">
+  <img src="Lrrr_Spaceship2.webp" alt="Lrrr Ship 2" class="ship2">
+
+  <div style="position:absolute; bottom:20px; left:50%; transform:translateX(-50%); text-align:center; z-index:100;">
+    <p style="font-size:24px; margin:10px;">The Omicronian fleet has arrived.</p>
+    <p style="font-size:18px; color:#0f0;">Resistance is futile.</p>
+  </div>
+
+</body>
+</html>
