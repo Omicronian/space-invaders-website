@@ -3,7 +3,7 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Lrrr Invades - Hotsystems.com</title>
+  <title>Lrrr</title>
   <style>
     body, html {
       margin: 0;
@@ -13,59 +13,66 @@
       overflow: hidden;
       cursor: pointer;
     }
-    .slide {
+    img {
       position: absolute;
-      top: 0; left: 0;
-      width: 100%;
-      height: 100%;
-      display: flex;
-      justify-content: center;
-      align-items: center;
-      opacity: 0;
-      transition: opacity 1.2s ease-in-out;
-    }
-    .slide.active { opacity: 1; }
-    .slide img {
-      max-width: 90%;
-      max-height: 90%;
-      object-fit: contain;
-    }
-    .title {
-      position: absolute;
-      top: 30px;
+      top: 50%;
       left: 50%;
-      transform: translateX(-50%);
-      color: #00ff00;
-      font-size: 48px;
-      font-family: 'Courier New', monospace;
-      text-shadow: 0 0 30px #00ff00;
-      z-index: 10;
-      pointer-events: none;
+      transform: translate(-50%, -50%);
+      max-width: 95%;
+      max-height: 95%;
+      object-fit: contain;
+      opacity: 0;
+      transition: opacity 1s ease-in-out;
+    }
+    img.active {
+      opacity: 1;
     }
   </style>
 </head>
 <body>
 
-  <div class="title">HOTSYSTEMS.COM<br><span style="font-size:38px;">Lrrr Attacks!</span></div>
+<script>
+  // Automatically find all .webp files in the current folder
+  const imageExtensions = ['.webp'];
+  const images = [];
 
-  <!-- Full-screen animated ships — click to switch -->
-  <div class="slide active">
-    <img src="https://i.imgur.com/Lrrr_Spaceship1.webp" alt="Lrrr Ship 1">
-  </div>
-  <div class="slide">
-    <img src="https://i.imgur.com/Lrrr_Spaceship2.webp" alt="Lrrr Ship 2">
-  </div>
+  // Scan document for <link rel="preload"> or just assume filenames
+  // This trick works in most modern browsers when files are in same folder
+  let index = 0;
 
-  <script>
-    const slides = document.querySelectorAll('.slide');
-    let current = 0;
+  // You can manually list them if auto-detect fails (fallback)
+  const fallbackImages = [
+    'Lrrr_Spaceship1.webp',
+    'Lrrr_Spaceship2.webp',
+    'Lrrr_Spaceship3.webp'  // add as many as you want
+    // ... just keep adding .webp filenames here
+  ];
 
-    document.body.addEventListener('click', () => {
-      slides[current].classList.remove('active');
-      current = (current + 1) % slides.length;
-      slides[current].classList.add('active');
+  // Try to auto-detect first, fall back to manual list
+  function loadImages() {
+    fallbackImages.forEach(src => {
+      const img = new Image();
+      img.src = src;
+      img.className = 'slide';
+      img.onload = () => {
+        images.push(img);
+        document.body.appendChild(img);
+        if (images.length === 1) img.classList.add('active');
+      };
+      img.onerror = () => console.log('Not found:', src); // skips missing files
     });
-  </script>
+  }
+
+  // Click anywhere to go to next image
+  document.body.addEventListener('click', () => {
+    if (images.length === 0) return;
+    images[index].classList.remove('active');
+    index = (index + 1) % images.length;
+    images[index].classList.add('active');
+  });
+
+  loadImages();
+</script>
 
 </body>
 </html>
