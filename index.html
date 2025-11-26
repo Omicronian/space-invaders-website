@@ -25,37 +25,42 @@ renderer.setSize(innerWidth, innerHeight);
 renderer.setPixelRatio(devicePixelRatio);
 document.body.appendChild(renderer.domElement);
 
-// Soft lighting so your textures look perfect
-scene.add(new THREE.AmbientLight(0xffffff, 1.5));
-scene.add(new THREE.DirectionalLight(0xffffff, 2).position.set(50,100,50));
+// Better lighting (fixed chaining error)
+const ambientLight = new THREE.AmbientLight(0xffffff, 2.0);  // Brighter ambient for textures
+scene.add(ambientLight);
 
-// Load YOUR actual model + textures (already in your repo)
+const directionalLight = new THREE.DirectionalLight(0xffffff, 2);
+directionalLight.position.set(50, 100, 50);  // Split: create first, then set position
+scene.add(directionalLight);
+
+// Load YOUR actual model + textures
 new GLTFLoader()
   .setPath('assets/')
-  .load('scene.gltf',                 // ← your exact filename
+  .load('scene.gltf',
     (gltf) => {
       const rocket = gltf.scene;
-      rocket.scale.set(4,4,4);
+      rocket.scale.set(4, 4, 4);
       scene.add(rocket);
     },
     undefined,
     () => {
-      // If somehow still not found → show a simple chrome cylinder
-      scene.add(new THREE.Mesh(
-        new THREE.CylinderGeometry(2.5,2.5,100,64),
-        new THREE.MeshPhysicalMaterial({color:0xcccccc,metalness:1,roughness:0.1})
-      ));
+      // Fallback chrome rocket if GLTF fails
+      const fallback = new THREE.Mesh(
+        new THREE.CylinderGeometry(2.5, 2.5, 100, 64),
+        new THREE.MeshPhysicalMaterial({color:0xcccccc, metalness:1, roughness:0.1})
+      );
+      scene.add(fallback);
     }
   );
 
-// Perfect static centered view
+// Static centered camera
 camera.position.set(0, 10, 120);
 camera.lookAt(0, 0, 0);
 
-// Render once – completely static
+// Render once (static)
 renderer.render(scene, camera);
 
-// Resize support
+// Resize
 window.addEventListener('resize', () => {
   camera.aspect = innerWidth/innerHeight;
   camera.updateProjectionMatrix();
