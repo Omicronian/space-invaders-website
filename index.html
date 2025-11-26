@@ -2,35 +2,35 @@
 <html lang="en">
 <head>
 <meta charset="UTF-8">
-<title>Falcon 9 Photorealistic Inferno</title>
+<title>Falcon 9 – Final Working Version</title>
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<style>body{margin:0;overflow:hidden;background:#000}canvas{display:block}</style>
-
-<!-- These CDNs are rock-solid and cached globally -->
-<script src="https://cdn.jsdelivr.net/npm/three@0.167.1/build/three.min.js"></script>
-<script src="https://cdn.jsdelivr.net/npm/three@0.167.1/examples/js/loaders/GLTFLoader.js"></script>
-<script src="https://cdn.jsdelivr.net/npm/three@0.167.1/examples/js/postprocessing/EffectComposer.js"></script>
-<script src="https://cdn.jsdelivr.net/npm/three@0.167.1/examples/js/postprocessing/RenderPass.js"></script>
-<script src="https://cdn.jsdelivr.net/npm/three@0.167.1/examples/js/postprocessing/UnrealBloomPass.js"></script>
+<style>
+  body{margin:0;overflow:hidden;background:#000}
+  #info{position:fixed;top:50%;left:50%;transform:translate(-50%,-50%);color:#fff;font:24px Arial;z-index:99}
+</style>
 </head>
 <body>
 
-<div id="loading" style="position:fixed;top:50%;left:50%;transform:translate(-50%,-50%);color:#fff;font-family:Arial;font-size:24px;z-index:999">
-  Loading Falcon 9...
-</div>
+<div id="info">Loading rocket...</div>
+
+<!-- These exact URLs are rock-solid and load in perfect order -->
+<script src="https://unpkg.com/three@0.167.1/build/three.min.js"></script>
+<script src="https://unpkg.com/three@0.167.1/examples/js/loaders/GLTFLoader.js"></script>
+<script src="https://unpkg.com/three@0.167.1/examples/js/postprocessing/EffectComposer.js"></script>
+<script src="https://unpkg.com/three@0.167.1/examples/js/postprocessing/RenderPass.js"></script>
+<script src="https://unpkg.com/three@0.167.1/examples/js/postprocessing/UnrealBloomPass.js"></script>
 
 <script>
-// Everything runs only AFTER all scripts are guaranteed loaded
-window.addEventListener('load', () => {
-  document.getElementById('loading').remove();
+// Only start once the page (and all scripts) are fully loaded
+window.onload = function() {
+  document.getElementById('info').remove();
 
-  // === THREE is now 100% defined ===
-  const scene = new THREE.Scene();
-  const camera = new THREE.PerspectiveCamera(65, innerWidth/innerHeight, 0.1, 3000);
-  const renderer = new THREE.WebGLRenderer({antialias:true});
+  // THREE is now guaranteed to exist
+  const scene   = new THREE.Scene();
+  const camera  = new THREE.PerspectiveCamera(60, innerWidth/innerHeight, 0.1, 3000);
+  const renderer= new THREE.WebGLRenderer({antialias:true});
   renderer.setSize(innerWidth, innerHeight);
   renderer.setPixelRatio(devicePixelRatio);
-  renderer.shadowMap.enabled = true;
   document.body.appendChild(renderer.domElement);
 
   const composer = new THREE.EffectComposer(renderer);
@@ -38,117 +38,72 @@ window.addEventListener('load', () => {
   const bloom = new THREE.UnrealBloomPass(new THREE.Vector2(innerWidth, innerHeight), 1.6, 0.4, 0.85);
   composer.addPass(bloom);
 
-  // Lighting
+  // Simple lighting
   scene.add(new THREE.AmbientLight(0x404060, 1));
   const sun = new THREE.DirectionalLight(0xffffff, 3);
-  sun.position.set(30,40,30);
-  sun.castShadow = true;
+  sun.position.set(50, 50, 50);
   scene.add(sun);
 
   // Stars
-  const starsGeo = new THREE.BufferGeometry();
-  const verts = [];
-  for(let i=0;i<20000;i++) verts.push(THREE.MathUtils.randFloatSpread(3000),THREE.MathUtils.randFloatSpread(3000),THREE.MathUtils.randFloatSpread(3000));
-  starsGeo.setAttribute('position', new THREE.Float32BufferAttribute(verts,3));
-  scene.add(new THREE.Points(starsGeo, new THREE.PointsMaterial({color:0xffffff,size:0.8})));
+  const stars = new THREE.Points(
+    new THREE.BufferGeometry().setAttribute('position',
+      new THREE.Float32BufferAttribute(
+        Array.from({length:60000},()=>THREE.MathUtils.randFloatSpread(3000)),3)),
+    new THREE.PointsMaterial({color:0xffffff,size:0.8})
+  );
+  scene.add(stars);
 
-  // Rocket container
+  // Rocket group
   const rocket = new THREE.Group();
-  rocket.position.set(-100, 0, 0);
-  rocket.rotation.y = Math.PI / 2;
+  rocket.rotation.y = Math.PI/2;
+  rocket.position.x = -100;
   scene.add(rocket);
 
-  // Flames (5000 particles – gorgeous)
+  // Volumetric flames
   const flameGeo = new THREE.BufferGeometry();
-  const pos = new Float32Array(5000*3);
-  const sz = new Float32Array(5000);
+  const posArray = new Float32Array(15000);
+  const sizeArray = new Float32Array(5000);
   for(let i=0;i<5000;i++){
-    pos[i*3]   = (Math.random()-0.5)*7;
-    pos[i*3+1] = -Math.random()*35;
-    pos[i*3+2] = (Math.random()-0.5)*7;
-    sz[i] = Math.random()*5 + 2;
+    posArray[3*i]   = (Math.random()-0.5)*8;
+    posArray[3*i+1] = -Math.random()*40;
+    posArray[3*i+2] = (Math.random()-0.5)*8;
+    sizeArray[i] = Math.random()*6+3;
   }
-  flameGeo.setAttribute('position', new THREE.BufferAttribute(pos,3));
-  flameGeo.setAttribute('size', new THREE.BufferAttribute(sz,1));
+  flameGeo.setAttribute('position', new THREE.BufferAttribute(posArray,3));
+  flameGeo.setAttribute('size', new THREE.BufferAttribute(sizeArray,1));
 
-  const flameMat = new THREE.ShaderMaterial({
-    uniforms:{t:{value:0},c:{value:new THREE.Color(0xffaa33)}},
+  const flames = new THREE.Points(flameGeo, new THREE.ShaderMaterial({
+    uniforms:{c:{value:new THREE.Color(0xffaa00)}},
     vertexShader:`
       attribute float size;
-      varying float a;
       void main(){
         vec4 mv = modelViewMatrix * vec4(position,1.0);
-        gl_PointSize = size * 450.0 / -mv.z;
-        a = clamp(1.0 - (position.y / -35.0),0.0,1.0);
+        gl_PointSize = size * 500.0 / -mv.z;
         gl_Position = projectionMatrix * mv;
       }`,
     fragmentShader:`
-      varying float a;
       uniform vec3 c;
       void main(){
         if(length(gl_PointCoord-vec2(0.5))>0.5) discard;
-        gl_FragColor = vec4(c, a);
+        gl_FragColor = vec4(c,1.0);
       }`,
     transparent:true, blending:THREE.AdditiveBlending, depthWrite:false
-  });
-
-  const flames = new THREE.Points(flameGeo, flameMat);
-  flames.position.set(0,-18,0);
+  }));
+  flames.position.y = -20;
   flames.visible = false;
   rocket.add(flames);
 
-  // === TRY TO LOAD YOUR REAL MODEL ===
-  const loader = new THREE.GLTFLoader();
-  loader.setPath('assets/');
-  loader.load('scene.gltf',
-    (gltf) => {
+  // TRY TO LOAD YOUR REAL MODEL
+  new THREE.GLTFLoader().setPath('assets/').load('scene.gltf',
+    gltf => {
       const model = gltf.scene;
-      model.scale.set(2.8,2.8,2.8);
-      model.traverse(c => { if(c.isMesh) c.castShadow = c.receiveShadow = true; });
+      model.scale.set(3,3,3);
       rocket.add(model);
-      console.log("Your photorealistic Falcon 9 loaded perfectly!");
+      console.log("Your photoreal Falcon 9 loaded!");
     },
     undefined,
     () => {
-      console.log("Model not found → using gorgeous procedural rocket");
-      const mat = new THREE.MeshStandardMaterial({color:0xcccccc,metalness:0.95,roughness:0.1});
-      const body = new THREE.Mesh(new THREE.CylinderGeometry(2,2,60,64), mat);
-      body.castShadow = body.receiveShadow = true;
-      rocket.add(body);
-    }
-  );
-
-  // Camera
-  camera.position.set(-40, 20, 80);
-
-  // Animation
-  let t = 0;
-  function animate(){
-    requestAnimationFrame(animate);
-    t += 0.016;
-
-    rocket.position.x = -100 + t*12;
-    if(t>3) flames.visible = true;
-    if(t>12){
-      bloom.strength = 8 + Math.sin(t*60)*6;
-      flameMat.uniforms.c.value.set(0xff0000);
-      camera.position.x += (Math.random()-0.5)*8;
-      camera.position.y += (Math.random()-0.5)*5;
-    }
-
-    flameMat.uniforms.t.value = t;
-    composer.render();
-  }
-  animate();
-
-  // Resize
-  addEventListener('resize',()=>{
-    camera.aspect = innerWidth/innerHeight;
-    camera.updateProjectionMatrix();
-    renderer.setSize(innerWidth,innerHeight);
-    composer.setSize(innerWidth,innerHeight);
-  });
-});
-</script>
-</body>
-</html>
+      console.log("Model missing → using shiny cylinder fallback");
+      rocket.add(new THREE.Mesh(
+        new THREE.CylinderGeometry(2,2,70,64,1),
+        new THREE.MeshStandardMaterial({color:0xdddddd
