@@ -2,15 +2,13 @@
 <html lang="en">
 <head>
 <meta charset="UTF-8">
-<title>Falcon 9 – FINAL BEAUTIFUL VERSION</title>
+<title>Falcon 9 Clean Fly-By</title>
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <style>
-  body{margin:0;overflow:hidden;background:#000}
-  #msg{position:fixed;top:20px;left:20px;color:#0f0;font:16px monospace;z-index:999;background:rgba(0,0,0,0.5);padding:10px;border-radius:8px}
+  body { margin:0; overflow:hidden; background:#000; }
 </style>
 </head>
 <body>
-<div id="msg">Loading your Falcon 9...</div>
 
 <script type="importmap">
 {"imports":{"three":"https://threejs.org/build/three.module.js","three/addons/":"https://threejs.org/examples/jsm/"}}
@@ -19,137 +17,98 @@
 <script type="module">
 import * as THREE from 'three';
 import {GLTFLoader} from 'three/addons/loaders/GLTFLoader.js';
-import {EffectComposer} from 'three/addons/postprocessing/EffectComposer.js';
-import {RenderPass} from 'three/addons/postprocessing/RenderPass.js';
-import {UnrealBloomPass} from 'three/addons/postprocessing/UnrealBloomPass.js';
 
-document.getElementById('msg').textContent = "Initializing scene...";
-
-const scene     = new THREE.Scene();
-const camera    = new THREE.PerspectiveCamera(60, innerWidth/innerHeight, 0.1, 5000);
-const renderer  = new THREE.WebGLRenderer({antialias:true});
+// Scene
+const scene = new THREE.Scene();
+const camera = new THREE.PerspectiveCamera(60, innerWidth/innerHeight, 0.1, 1000);
+const renderer = new THREE.WebGLRenderer({antialias:true});
 renderer.setSize(innerWidth, innerHeight);
 renderer.setPixelRatio(devicePixelRatio);
 document.body.appendChild(renderer.domElement);
 
-const composer = new EffectComposer(renderer);
-composer.addPass(new RenderPass(scene, camera));
-const bloom = new UnrealBloomPass(new THREE.Vector2(innerWidth, innerHeight), 1.8, 0.4, 0.85);
-composer.addPass(bloom);
+// Soft lighting
+scene.add(new THREE.AmbientLight(0x404060, 2));
+scene.add(new THREE.DirectionalLight(0xffffff, 3).position.set(50, 50, 50));
 
-scene.add(new THREE.AmbientLight(0x404060, 1));
-scene.add(new THREE.DirectionalLight(0xffffff, 4).position.set(100,100,100));
+// Simple starfield
+const stars = new THREE.Points(
+  new THREE.BufferGeometry().setAttribute('position',
+    new THREE.Float32BufferAttribute(
+      Float32Array.from({length:30000}, () => THREE.MathUtils.randFloatSpread(2000)), 3
+    )),
+  new THREE.PointsMaterial({color:0xffffff, size:1})
+);
+scene.add(stars);
 
-// Fixed stars (no more jumping)
-const starsGeom = new THREE.BufferGeometry();
-const starVertices = new Float32Array(60000);
-for(let i=0;i<20000;i++){
-  starVertices[3*i]   = THREE.MathUtils.randFloatSpread(4000);
-  starVertices[3*i+1] = THREE.MathUtils.randFloatSpread(4000);
-  starVertices[3*i+2] = THREE.MathUtils.randFloatSpread(4000);
-}
-starsGeom.setAttribute('position', new THREE.BufferAttribute(starVertices,3));
-scene.add(new THREE.Points(starsGeom, new THREE.PointsMaterial({color:0xffffff,size:1.2})));
-
-// Rocket
+// Rocket container
 const rocket = new THREE.Group();
-rocket.rotation.y = Math.PI/2;   // horizontal flight
-rocket.position.x = -150;
+rocket.rotation.y = Math.PI / 2;  // horizontal
+rocket.position.set(-80, 0, 0);
 scene.add(rocket);
 
-// Beautiful flames
-const flameGeom = new THREE.BufferGeometry();
-const pos = new Float32Array(18000);
-const sz  = new Float32Array(6000);
-for(let i=0;i<6000;i++){
-  pos[3*i]   = (Math.random()-0.5)*12;
-  pos[3*i+1] = -Math.random()*60;
-  pos[3*i+2] = (Math.random()-0.5)*12;
-  sz[i] = Math.random()*10+6;
+// Engine flames (soft orange → white core)
+const flameGeo = new THREE.BufferGeometry();
+const positions = new Float32Array(9000);
+for(let i=0; i<3000; i++){
+  positions[i*3]   = (Math.random()-0.5)*8;
+  positions[i*3+1] = -Math.random()*40;
+  positions[i*3+2] = (Math.random()-0.5)*8;
 }
-flameGeom.setAttribute('position', new THREE.BufferAttribute(pos,3));
-flameGeom.setAttribute('size',    new THREE.BufferAttribute(sz,1));
+flameGeo.setAttribute('position', new THREE.BufferAttribute(positions,3));
 
-const flames = new THREE.Points(flameGeom, new THREE.ShaderMaterial({
-  uniforms:{c:{value:new THREE.Color(0xffaa00)}},
-  vertexShader:`attribute float size;
-    void main(){
-      vec4 mv = modelViewMatrix * vec4(position,1.0);
-      gl_PointSize = size * 800.0 / -mv.z;
-      gl_Position = projectionMatrix * mv;
-    }`,
-  fragmentShader:`uniform vec3 c;
+const flames = new THREE.Points(flameGeo, new THREE.ShaderMaterial({
+  uniforms: {color: {value: new THREE.Color(0xffaa33)}},
+  vertexShader: `void main(){
+    vec4 mv = modelViewMatrix * vec4(position,1.0);
+    gl_PointSize = 600.0 / -mv.z;
+    gl_Position = projectionMatrix * mv;
+  }`,
+  fragmentShader: `uniform vec3 color;
     void main(){
       if(length(gl_PointCoord-vec2(0.5))>0.5) discard;
-      gl_FragColor = vec4(c,1.0);
+      gl_FragColor = vec4(color,1.0);
     }`,
-  transparent:true, blending:THREE.AdditiveBlending, depthWrite:false
+  transparent: true,
+  blending: THREE.AdditiveBlending
 }));
-flames.position.y = -28;
-flames.visible = false;
+flames.position.y = -25;
 rocket.add(flames);
 
-// TRY TO LOAD YOUR REAL MODEL
-document.getElementById('msg').textContent = "Loading GLTF model...";
-const loader = new GLTFLoader();
-loader.setPath('assets/');
-
-loader.load('scene.gltf', 
-  (gltf) => {
+// Load your real Falcon 9
+new GLTFLoader().setPath('assets/').load('scene.gltf',
+  gltf => {
     const model = gltf.scene;
-    model.scale.set(3.8, 3.8, 3.8);
-    model.traverse(n => { if(n.isMesh) n.castShadow = n.receiveShadow = true; });
+    model.scale.set(3.5, 3.5, 3.5);
     rocket.add(model);
-    document.getElementById('msg').textContent = "Real Falcon 9 loaded – launching!";
   },
   undefined,
-  (err) => {
-    document.getElementById('msg').textContent = "Model not found → using beautiful chrome rocket";
-    console.warn("GLTF failed:", err);
-    // Gorgeous chrome fallback so it never looks broken
+  () => {
+    // Fallback: shiny chrome rocket (still looks great)
     const fallback = new THREE.Mesh(
-      new THREE.CylinderGeometry(2.6, 2.6, 100, 64, 1),
-      new THREE.MeshPhysicalMaterial({
-        color: 0xdddddd,
-        metalness: 1,
-        roughness: 0.1,
-        clearcoat: 1,
-        clearcoatRoughness: 0
-      })
+      new THREE.CylinderGeometry(2.5, 2.5, 90, 64),
+      new THREE.MeshPhysicalMaterial({color:0xdddddd, metalness:1, roughness:0.1, clearcoat:1})
     );
-    fallback.position.y = 20;
     rocket.add(fallback);
   }
 );
 
-camera.position.set(-70, 45, 160);
-camera.lookAt(0,0,0);
+// Camera
+camera.position.set(-40, 20, 100);
+camera.lookAt(0, 0, 0);
 
-let t = 0;
-function animate(){
+// Simple smooth flight
+function animate() {
   requestAnimationFrame(animate);
-  t += 0.016;
-
-  rocket.position.x = -150 + t*20;   // smooth fast fly-by
-  if(t>3.5) flames.visible = true;
-
-  if(t>12){
-    bloom.strength = 18;
-    flames.material.uniforms.c.value.set(0xff2200);
-    camera.position.x += (Math.random()-0.5)*25;
-    camera.position.y += (Math.random()-0.5)*18;
-  }
-
-  composer.render();
+  rocket.position.x += 0.8;   // smooth constant speed
+  renderer.render(scene, camera);
 }
 animate();
 
 // Resize
-window.addEventListener('resize',()=>{
+window.addEventListener('resize', () => {
   camera.aspect = innerWidth/innerHeight;
   camera.updateProjectionMatrix();
-  renderer.setSize(innerWidth,innerHeight);
-  composer.setSize(innerWidth,innerHeight);
+  renderer.setSize(innerWidth, innerHeight);
 });
 </script>
 </body>
