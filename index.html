@@ -1,155 +1,143 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-<meta charset="UTF-8">
-<title>Falcon 9 Horizontal Burn</title>
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<style>
-  body, html { margin:0; padding:0; height:100%; background:#000; overflow:hidden; }
-  
-  /* Deep space background */
-  #space {
-    position:fixed; inset:0;
-    background: radial-gradient(circle at 30% 50%, #001133 0%, #000 70%);
-    background-size: 200% 200%;
-    animation: drift 60s infinite linear;
-  }
-  @keyframes drift { 0%{background-position:0% 0%} 100%{background-position:100% 100%} }
-
-  .stars { 
-    position:fixed; inset:0; 
-    background:transparent url('https://assets.codepen.io/1538474/stars.png') repeat;
-    opacity:0.6;
-  }
-
-  /* Realistic Falcon 9 (SVG + filters) */
-  .rocket {
-    position: absolute;
-    width: 600px;
-    height: 240px;
-    left: -700px;
-    bottom: 28%;
-    animation: fly 11s linear forwards;
-    filter: drop-shadow(0 0 40px rgba(255,100,0,0.8));
-    z-index: 10;
-  }
-  @keyframes fly {
-    0%   { left: -700px; transform: translateY(0) rotate(0deg); }
-    75%  { left: 60%; }
-    100% { left: 120vw; transform: translateY(-100px) rotate(5deg); }
-  }
-
-  /* Engine plumes – multiple layered particle-like flames */
-  .engines {
-    position: absolute;
-    left: 20px;
-    bottom: 48px;
-    width: 160px;
-    height: 300px;
-  }
-  .plume {
-    position: absolute;
-    border-radius: 50%;
-    background: radial-gradient(circle at 40% 20%, white 5%, #ff8c00 20%, #ff3400 45%, transparent 70%);
-    animation: pulse 0.08s infinite alternate;
-    filter: blur(8px);
-  }
-  .plume:nth-child(1) { width:120px; height:280px; left:10px;  animation-duration:0.07s; }
-  .plume:nth-child(2) { width:140px; height:320px; left:50px;  animation-duration:0.09s; opacity:0.9; }
-  .plume:nth-child(3) { width:100px; height:240px; left:90px;  animation-duration:0.11s; }
-
-  .core {
-    position: absolute;
-    width: 60px; height: 400px;
-    left: 78px; bottom: -20px;
-    background: linear-gradient(to bottom, white 0%, #ffaa00 30%, transparent 100%);
-    filter: blur(12px);
-    animation: corepulse 0.06s infinite alternate;
-  }
-  @keyframes pulse { 0%{transform:scale(1)   translateY(0)}   100%{transform:scale(1.15) translateY(20px)} }
-  @keyframes corepulse { 0%{opacity:0.9; transform:scaleY(1)} 100%{opacity:1; transform:scaleY(1.3)} }
-
-  /* Heat distortion layer */
-  .heat {
-    position: absolute;
-    inset: 0;
-    background: repeating-linear-gradient(90deg, transparent, transparent 10px, rgba(255,150,0,0.1) 10px, rgba(255,150,0,0.1) 20px);
-    animation: heatwave 0.15s infinite linear;
-    opacity: 0.6;
-    pointer-events: none;
-  }
-  @keyframes heatwave { 0%{background-position:0 0} 100%{background-position:100px 0} }
-
-  /* Final inferno */
-  .inferno {
-    position: fixed;
-    inset: 0;
-    background: radial-gradient(circle at 70% 50%, #ffffff 5%, #ff4400 15%, #ff0000 35%, #8b0000 70%, #000000);
-    opacity: 0;
-    pointer-events: none;
-    z-index: 999;
-    animation: explode 4s 10.2s forwards;
-  }
-  @keyframes explode {
-    0%   { opacity:0; transform:scale(0.3); }
-    20%  { opacity:1; transform:scale(1); }
-    100% { opacity:1; transform:scale(3); }
-  }
-
-  .shockwave {
-    position: fixed;
-    top: 50%; left: 50%;
-    width: 10px; height: 10px;
-    border-radius: 50%;
-    box-shadow: 0 0 0 0 rgba(255,100,0,0.8);
-    animation: shock 3s 10.5s forwards;
-    z-index: 1000;
-  }
-  @keyframes shock {
-    0%   { box-shadow:0 0 0 0 rgba(255,100,0,1); transform:scale(1); }
-    100% { box-shadow:0 0 0 200vw rgba(255,0,0,0); transform:scale(200); }
-  }
-</style>
+  <meta charset="UTF-8">
+  <title>Photorealistic Falcon 9 Launch</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <style>
+    body { margin: 0; overflow: hidden; background: #000; }
+    #container { width: 100vw; height: 100vh; }
+    canvas { display: block; }
+  </style>
+  <!-- Three.js CDN -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/loaders/GLTFLoader.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/postprocessing/EffectComposer.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/postprocessing/RenderPass.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/postprocessing/UnrealBloomPass.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/shaders/CopyShader.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/postprocessing/ShaderPass.js"></script>
 </head>
 <body>
+  <div id="container"></div>
+  <script>
+    // Scene setup
+    const scene = new THREE.Scene();
+    const camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 1000);
+    const renderer = new THREE.WebGLRenderer({ antialias: true });
+    renderer.setSize(window.innerWidth, window.innerHeight);
+    renderer.shadowMap.enabled = true;
+    renderer.shadowMap.type = THREE.PCFSoftShadowMap; // Soft shadows for realism
+    document.getElementById('container').appendChild(renderer.domElement);
 
-  <div id="space">
-    <div class="stars"></div>
-  </div>
+    // Post-processing for bloom (glow on flames)
+    const composer = new THREE.EffectComposer(renderer);
+    const renderPass = new THREE.RenderPass(scene, camera);
+    composer.addPass(renderPass);
+    const bloomPass = new THREE.UnrealBloomPass(new THREE.Vector2(window.innerWidth, window.innerHeight), 1.5, 0.4, 0.85);
+    composer.addPass(bloomPass);
 
-  <div class="rocket">
-    <!-- Realistic Falcon 9 SVG (white with black interstage) -->
-    <svg viewBox="0 0 600 240" xmlns="http://www.w3.org/2000/svg">
-      <!-- Main body -->
-      <rect x="80" y="60" width="400" height="100" rx="50" fill="#f0f0f0"/>
-      <rect x="80" y="60" width="400" height="20" fill="#222"/> <!-- interstage -->
-      <!-- Nose cone -->
-      <ellipse cx="80" cy="110" rx="50" ry="60" fill="#e0e0e0"/>
-      <!-- Grid fins (simplified) -->
-      <rect x="450" y="40" width="60" height="8" fill="#333" transform="rotate(-30 480 44)"/>
-      <rect x="450" y="172" width="60" height="8" fill="#333" transform="rotate(30 480 176)"/>
-      <!-- Engines base -->
-      <circle cx="140" cy="110" r="35" fill="#333"/>
-      <circle cx="200" cy="110" r="45" fill="#333"/>
-      <circle cx="260" cy="110" r="35" fill="#333"/>
-    </svg>
+    // Lighting: Key, fill, and rim for photorealism
+    const ambientLight = new THREE.AmbientLight(0x404040, 0.4);
+    scene.add(ambientLight);
+    const directionalLight = new THREE.DirectionalLight(0xffffff, 1);
+    directionalLight.position.set(5, 10, 5);
+    directionalLight.castShadow = true;
+    scene.add(directionalLight);
 
-    <div class="engines">
-      <div class="plume"></div>
-      <div class="plume"></div>
-      <div class="plume"></div>
-      <div class="core"></div>
-    </div>
-    <div class="heat"></div>
-  </div>
+    // Stars background
+    const starsGeometry = new THREE.BufferGeometry();
+    const starsMaterial = new THREE.PointsMaterial({ color: 0xffffff, size: 0.005 });
+    const starsVertices = [];
+    for (let i = 0; i < 10000; i++) {
+      starsVertices.push(THREE.MathUtils.randFloatSpread(2000));
+      starsVertices.push(THREE.MathUtils.randFloatSpread(2000));
+      starsVertices.push(THREE.MathUtils.randFloatSpread(2000));
+    }
+    starsGeometry.setAttribute('position', new THREE.Float32BufferAttribute(starsVertices, 3));
+    const stars = new THREE.Points(starsGeometry, starsMaterial);
+    scene.add(stars);
 
-  <div class="inferno"></div>
-  <div class="shockwave"></div>
+    // Load Falcon 9 model
+    const loader = new THREE.GLTFLoader();
+    let rocket;
+    loader.load('assets/falcon9.gltf', (gltf) => { // Replace with your model path
+      rocket = gltf.scene;
+      rocket.scale.set(0.5, 0.5, 0.5); // Adjust scale
+      rocket.position.set(-20, 0, 0);
+      rocket.castShadow = true;
+      rocket.receiveShadow = true;
+      scene.add(rocket);
+    }, undefined, (error) => console.error('Model load error:', error));
 
-  <!-- Optional epic sound (hosted publicly) -->
-  <audio autoplay loop volume="0.4">
-    <source src="https://assets.mixkit.co/sfx/preview/mixkit-futuristic-reactor-328.mp3" type="audio/mpeg">
-  </audio>
+    // Flame particles (photorealistic: turbulent, glowing)
+    const flameParticles = 2000;
+    const flameGeometry = new THREE.BufferGeometry();
+    const flamePositions = new Float32Array(flameParticles * 3);
+    const flameVelocities = new Float32Array(flameParticles * 3);
+    for (let i = 0; i < flameParticles; i++) {
+      flamePositions[i * 3] = (Math.random() - 0.5) * 0.1; // X
+      flamePositions[i * 3 + 1] = -Math.random() * 5; // Y (downward)
+      flamePositions[i * 3 + 2] = (Math.random() - 0.5) * 0.05; // Z
+      flameVelocities[i * 3 + 1] = -0.1 - Math.random() * 0.05; // Fall speed
+    }
+    flameGeometry.setAttribute('position', new THREE.BufferAttribute(flamePositions, 3));
+    const flameMaterial = new THREE.PointsMaterial({
+      size: 0.02,
+      color: new THREE.Color().setHSL(0.1, 1, Math.random() * 0.5 + 0.5), // Orange-yellow glow
+      transparent: true,
+      opacity: 0.8,
+      blending: THREE.AdditiveBlending // For fire bloom
+    });
+    const flames = new THREE.Points(flameGeometry, flameMaterial);
+    flames.visible = false;
+    scene.add(flames);
 
+    // Animation loop
+    let time = 0;
+    function animate() {
+      requestAnimationFrame(animate);
+      time += 0.01;
+
+      // Fly horizontal
+      if (rocket) {
+        rocket.position.x = -20 + time * 2; // Speed: cross in 10s
+        if (time > 5) flames.visible = true; // Flames after takeoff
+      }
+
+      // Animate flames (physics: gravity + turbulence)
+      const positions = flameGeometry.attributes.position.array;
+      for (let i = 0; i < flameParticles; i++) {
+        positions[i * 3 + 1] += flameVelocities[i * 3 + 1]; // Fall
+        if (positions[i * 3 + 1] < -10) positions[i * 3 + 1] = 0; // Reset
+        positions[i * 3] += Math.sin(time + i) * 0.001; // Turbulence
+      }
+      flameGeometry.attributes.position.needsUpdate = true;
+
+      // Camera follow
+      camera.position.set(rocket ? rocket.position.x - 10 : 0, 2, 5);
+      camera.lookAt(rocket ? rocket.position : new THREE.Vector3(0,0,0));
+
+      // Inferno at end (t=10s)
+      if (time > 10) {
+        // Explosion: Scale flames massively + add red tint
+        flames.material.color.setHex(0xff0000);
+        bloomPass.strength = 3; // Intense glow
+        // Screen shake
+        camera.position.x += (Math.random() - 0.5) * 0.5;
+      }
+
+      composer.render();
+    }
+    animate();
+
+    // Resize handler
+    window.addEventListener('resize', () => {
+      camera.aspect = window.innerWidth / window.innerHeight;
+      camera.updateProjectionMatrix();
+      renderer.setSize(window.innerWidth, window.innerHeight);
+      composer.setSize(window.innerWidth, window.innerHeight);
+    });
+  </script>
 </body>
 </html>
