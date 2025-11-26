@@ -2,141 +2,138 @@
 <html lang="en">
 <head>
 <meta charset="UTF-8">
-<title>Falcon 9 Photorealistic Inferno – FINAL WORKING</title>
+<title>Falcon 9 – Photorealistic Horizontal Inferno</title>
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <style>
-  body{margin:0;overflow:hidden;background:#000}
-  #info{position:fixed;inset:0;display:flex;align-items:center;justify-content:center;color:#fff;font:bold 30px Arial;background:rgba(0,0,0,0.8);z-index:999}
+  body{margin:0;overflow:hidden;background:#000;font-family:Arial}
+  #load{position:fixed;inset:0;display:flex;align-items:center;justify-content:center;color:#fff;font-size:32px;background:#000;z-index:999}
 </style>
 </head>
 <body>
-<div id="info">Launching Falcon 9...</div>
+<div id="load">Launching Falcon 9...</div>
 
-<!-- These URLs are GUARANTEED to have correct MIME type on Azure -->
-<script src="https://cdn.jsdelivr.net/npm/three@0.167.1/build/three.min.js"></script>
-<script src="https://cdn.jsdelivr.net/npm/three@0.167.1/examples/js/loaders/GLTFLoader.js"></script>
-<script src="https://cdn.jsdelivr.net/npm/three@0.167.1/examples/js/postprocessing/EffectComposer.js"></script>
-<script src="https://cdn.jsdelivr.net/npm/three@0.167.1/examples/js/postprocessing/RenderPass.js"></script>
-<script src="https://cdn.jsdelivr.net/npm/three@0.167.1/examples/js/postprocessing/UnrealBloomPass.js"></script>
-
-<script>
-// Everything runs only after full page + scripts load
-window.onload = function() {
-  document.getElementById('info').remove();
-
-  const scene = new THREE.Scene();
-  const camera = new THREE.PerspectiveCamera(60, innerWidth/innerHeight, 0.1, 5000);
-  const renderer = new THREE.WebGLRenderer({antialias:true});
-  renderer.setSize(innerWidth, innerHeight);
-  renderer.setPixelRatio(devicePixelRatio);
-  document.body.appendChild(renderer.domElement);
-
-  const composer = new THREE.EffectComposer(renderer);
-  composer.addPass(new THREE.RenderPass(scene, camera));
-  const bloom = new THREE.UnrealBloomPass(new THREE.Vector2(innerWidth, innerHeight), 1.8, 0.4, 0.85);
-  composer.addPass(bloom);
-
-  scene.add(new THREE.AmbientLight(0x404060, 1));
-  const sun = new THREE.DirectionalLight(0xffffff, 3);
-  sun.position.set(100,100,100);
-  scene.add(sun);
-
-  // Stars
-  const starsGeom = new THREE.BufferGeometry();
-  const starsVert = [];
-  for(let i=0;i<20000;i++) starsVert.push(THREE.MathUtils.randFloatSpread(4000),THREE.MathUtils.randFloatSpread(4000),THREE.MathUtils.randFloatSpread(4000));
-  starsGeom.setAttribute('position', new THREE.Float32BufferAttribute(starsVert,3));
-  scene.add(new THREE.Points(starsGeom, new THREE.PointsMaterial({color:0xffffff,size:0.8})));
-
-  // Rocket group
-  const rocket = new THREE.Group();
-  rocket.rotation.y = Math.PI/2;
-  rocket.position.x = -120;
-  scene.add(rocket);
-
-  // Super realistic flames
-  const flameGeom = new THREE.BufferGeometry();
-  const pos = new Float32Array(6000*3);
-  const sz = new Float32Array(6000);
-  for(let i=0;i<6000;i++){
-    pos[i*3]   = (Math.random()-0.5)*10;
-    pos[i*3+1] = -Math.random()*50;
-    pos[i*3+2] = (Math.random()-0.5)*10;
-    sz[i] = Math.random()*7+4;
+<!-- OFFICIAL Three.js CDN – always correct MIME types -->
+<script type="importmap">
+{
+  "imports": {
+    "three": "https://threejs.org/build/three.module.js",
+    "three/addons/": "https://threejs.org/examples/jsm/"
   }
-  flameGeom.setAttribute('position', new THREE.BufferAttribute(pos,3));
-  flameGeom.setAttribute('size', new THREE.BufferAttribute(sz,1));
+}
+</script>
 
-  const flames = new THREE.Points(flameGeom, new THREE.ShaderMaterial({
-    uniforms: {c:{value:new THREE.Color(0xffaa00)}},
-    vertexShader: `attribute float size;
-      void main(){
-        vec4 mv = modelViewMatrix * vec4(position,1.0);
-        gl_PointSize = size * 600.0 / -mv.z;
-        gl_Position = projectionMatrix * mv;
-      }`,
-    fragmentShader: `uniform vec3 c;
-      void main(){
-        if(length(gl_PointCoord-vec2(0.5))>0.5) discard;
-        gl_FragColor = vec4(c,1.0);
-      }`,
-    transparent:true, blending:THREE.AdditiveBlending, depthWrite:false
-  }));
-  flames.position.y = -22;
-  flames.visible = false;
-  rocket.add(flames);
+<script type="module">
+import * as THREE from 'three';
+import {GLTFLoader} from 'three/addons/loaders/GLTFLoader.js';
+import {EffectComposer} from 'three/addons/postprocessing/EffectComposer.js';
+import {RenderPass} from 'three/addons/postprocessing/RenderPass.js';
+import {UnrealBloomPass} from 'three/addons/postprocessing/UnrealBloomPass.js';
 
-  // LOAD YOUR REAL MODEL (with your exact texture names)
-  const loader = new THREE.GLTFLoader();
-  loader.setPath('assets/');
-  loader.load('scene.gltf',
-    gltf => {
-      const model = gltf.scene;
-      model.scale.set(3.2,3.2,3.2);
-      model.traverse(n => { if(n.isMesh) n.castShadow = n.receiveShadow = true; });
-      rocket.add(model);
-      console.log("Your real Falcon 9 loaded perfectly!");
-    },
-    undefined,
-    () => {
-      console.log("Model not found → using shiny fallback rocket");
-      const fallback = new THREE.Mesh(
-        new THREE.CylinderGeometry(2.2,2.2,80,64),
-        new THREE.MeshStandardMaterial({color:0xdddddd,metalness:0.95,roughness:0.1})
-      );
-      rocket.add(fallback);
-    }
-  );
+document.getElementById('load').remove();
 
-  camera.position.set(-50,30,120);
-  camera.lookAt(0,0,0);
+// Scene
+const scene = new THREE.Scene();
+const camera = new THREE.PerspectiveCamera(60, innerWidth/innerHeight, 0.1, 5000);
+const renderer = new THREE.WebGLRenderer({antialias:true});
+renderer.setSize(innerWidth, innerHeight);
+renderer.setPixelRatio(devicePixelRatio);
+document.body.appendChild(renderer.domElement);
 
-  let t = 0;
-  function animate(){
-    requestAnimationFrame(animate);
-    t += 0.016;
+const composer = new EffectComposer(renderer);
+composer.addPass(new RenderPass(scene, camera));
+const bloom = new UnrealBloomPass(new THREE.Vector2(innerWidth, innerHeight), 1.8, 0.4, 0.85);
+composer.addPass(bloom);
 
-    rocket.position.x = -120 + t*15;
-    if(t>3) flames.visible = true;
+// Lighting & stars
+scene.add(new THREE.AmbientLight(0x404060, 1));
+scene.add(new THREE.DirectionalLight(0xffffff, 4).position.set(100,100,100));
 
-    if(t>12){
-      bloom.strength = 12;
-      flames.material.uniforms.c.value.set(0xff0000);
-      camera.position.x += (Math.random()-0.5)*15;
-      camera.position.y += (Math.random()-0.5)*10;
-    }
+const stars = new THREE.Points(
+  new THREE.BufferGeometry().setAttribute('position',
+    new THREE.Float32BufferAttribute(Float32Array.from({length:60000},()=>THREE.MathUtils.randFloatSpread(4000)),3)),
+  new THREE.PointsMaterial({color:0xffffff,size:1})
+);
+scene.add(stars);
 
-    composer.render();
+// Rocket
+const rocket = new THREE.Group();
+rocket.rotation.y = Math.PI/2;
+rocket.position.x = -140;
+scene.add(rocket);
+
+// Epic flames
+const flameGeo = new THREE.BufferGeometry();
+const pos = new Float32Array(18000);
+const sz = new Float32Array(6000);
+for(let i=0;i<6000;i++){
+  pos[3*i]   = (Math.random()-0.5)*12;
+  pos[3*i+1] = -Math.random()*60;
+  pos[3*i+2] = (Math.random()-0.5)*12;
+  sz[i] = Math.random()*8+5;
+}
+flameGeo.setAttribute('position', new THREE.BufferAttribute(pos,3));
+flameGeo.setAttribute('size', new THREE.BufferAttribute(sz,1));
+
+const flames = new THREE.Points(flameGeo, new THREE.ShaderMaterial({
+  uniforms: {c:{value:new THREE.Color(0xffaa00)}},
+  vertexShader: `attribute float size;
+    void main(){
+      vec4 mv = modelViewMatrix * vec4(position,1.0);
+      gl_PointSize = size * 700.0 / -mv.z;
+      gl_Position = projectionMatrix * mv;
+    }`,
+  fragmentShader: `uniform vec3 c;
+    void main(){
+      if(length(gl_PointCoord-vec2(0.5))>0.5) discard;
+      gl_FragColor = vec4(c,1.0);
+    }`,
+  transparent:true, blending:THREE.AdditiveBlending, depthWrite:false
+}));
+flames.position.y = -25;
+flames.visible = false;
+rocket.add(flames);
+
+// Load your real model
+new GLTFLoader().setPath('assets/').load('scene.gltf',
+  gltf => {
+    const m = gltf.scene;
+    m.scale.set(3.5,3.5,3.5);
+    rocket.add(m);
+    console.log("Your photoreal Falcon 9 loaded!");
+  },
+  undefined,
+  () => {
+    console.log("Using fallback rocket");
+    rocket.add(new THREE.Mesh(new THREE.CylinderGeometry(2.5,2.5,90,64),
+      new THREE.MeshStandardMaterial({color:0xcccccc,metalness:0.95,roughness:0.1})));
   }
-  animate();
+);
 
-  window.addEventListener('resize',()=>{
-    camera.aspect = innerWidth/innerHeight;
-    camera.updateProjectionMatrix();
-    renderer.setSize(innerWidth,innerHeight);
-    composer.setSize(innerWidth,innerHeight);
-  });
-};
+camera.position.set(-60,40,150);
+
+let t=0;
+function animate(){
+  requestAnimationFrame(animate);
+  t += 0.016;
+
+  rocket.position.x = -140 + t*18;
+  if(t>3) flames.visible = true;
+  if(t>12){
+    bloom.strength = 15;
+    flames.material.uniforms.c.value.set(0xff0000);
+    camera.position.x += (Math.random()-0.5)*20;
+    camera.position.y += (Math.random()-0.5)*15;
+  }
+  composer.render();
+}
+animate();
+
+window.addEventListener('resize',()=>{
+  camera.aspect = innerWidth/innerHeight;
+  camera.updateProjectionMatrix();
+  renderer.setSize(innerWidth,innerHeight);
+  composer.setSize(innerWidth,innerHeight);
+});
 </script>
 </body>
 </html>
