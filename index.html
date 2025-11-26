@@ -2,9 +2,11 @@
 <html lang="en">
 <head>
 <meta charset="UTF-8">
-<title>Falcon 9 – Clean & Perfect</title>
+<title>SpaceX Falcon 9</title>
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<style>body{margin:0;overflow:hidden;background:#000}</style>
+<style>
+  body{margin:0;overflow:hidden;background:#000}
+</style>
 </head>
 <body>
 
@@ -17,17 +19,15 @@ import * as THREE from 'three';
 import {GLTFLoader} from 'three/addons/loaders/GLTFLoader.js';
 
 const scene    = new THREE.Scene();
-const camera   = new THREE.PerspectiveCamera(60, innerWidth/innerHeight, 0.1, 1000);
+const camera   = new THREE.PerspectiveCamera(50, innerWidth/innerHeight, 0.1, 1000);
 const renderer = new THREE.WebGLRenderer({antialias:true});
 renderer.setSize(innerWidth, innerHeight);
 renderer.setPixelRatio(devicePixelRatio);
 document.body.appendChild(renderer.domElement);
 
-// Lighting
+// Soft space lighting
 scene.add(new THREE.AmbientLight(0x404060, 2));
-const sun = new THREE.DirectionalLight(0xffffff, 3);
-sun.position.set(100, 100, 100);
-scene.add(sun);
+scene.add(new THREE.DirectionalLight(0xffffff, 3).position.set(50, 80, 50));
 
 // Stars
 scene.add(new THREE.Points(
@@ -36,66 +36,27 @@ scene.add(new THREE.Points(
   new THREE.PointsMaterial({color:0xffffff,size:1})
 ));
 
-// Rocket container
+// Rocket group – centered
 const rocket = new THREE.Group();
-rocket.rotation.y = Math.PI/2;
-rocket.position.x = -120;
 scene.add(rocket);
 
-// Engine flames
-const flameGeo = new THREE.BufferGeometry();
-const pos = new Float32Array(9000);
-for(let i=0;i<3000;i++){
-  pos[i*3]   = (Math.random()-0.5)*10;
-  pos[i*3+1] = -Math.random()*50;
-  pos[i*3+2] = (Math.random()-0.5)*10;
-}
-flameGeo.setAttribute('position', new THREE.BufferAttribute(pos,3));
+// Very gentle engine glow (static)
+const glow = new THREE.Points(
+  new THREE.BufferGeometry().setAttribute('position',
+    new THREE.Float32BufferAttribute(Float32Array.from({length:900},()=>[(Math.random()-0.5)*8,-Math.random()*15,(Math.random()-0.5)*8]),3)),
+  new THREE.PointsMaterial({color:0xffaa33,size:8,transparent:true,opacity:0.8,blending:THREE.AdditiveBlending})
+);
+glow.position.y = -28;
+rocket.add(glow);
 
-const flames = new THREE.Points(flameGeo, new THREE.ShaderMaterial({
-  uniforms: {c:{value:new THREE.Color(0xffaa33)}},
-  vertexShader: `void main(){
-    vec4 mv = modelViewMatrix * vec4(position,1.0);
-    gl_PointSize = 800.0 / -mv.z;
-    gl_Position = projectionMatrix * mv;
-  }`,
-  fragmentShader: `uniform vec3 c;
-    void main(){
-      if(length(gl_PointCoord-vec2(0.5))>0.5) discard;
-      gl_FragColor = vec4(c,1.0);
-    }`,
-  transparent:true, blending:THREE.AdditiveBlending
-}));
-flames.position.y = -28;
-rocket.add(flames);
-
-// LOAD YOUR REAL MODEL – FIXED
+// Try to load your real model
 const loader = new GLTFLoader();
 loader.setPath('assets/');
 
-loader.load('scene.gltf', 
+let modelLoaded = false;
+loader.load('scene.gltf',
   (gltf) => {
-    const model = gltf.scene;          // this is the correct Object3D
-    model.scale.set(3.8, 3.8, 3.8);
+    const model = gltf.scene;
+    model.scale.set(4,4,4);
     rocket.add(model);
-  },
-  undefined,
-  () => {
-    // Beautiful chrome fallback
-    const fallback = new THREE.Mesh(
-      new THREE.CylinderGeometry(2.6, 2.6, 100, 64),
-      new THREE.MeshPhysicalMaterial({
-        color: 0xeeeeee,
-        metalness: 1,
-        roughness: 0.08,
-        clearcoat: 1,
-        clearcoatRoughness: 0
-      })
-    );
-    rocket.add(fallback);
-  }
-);
-
-camera.position.set(-60, 30, 140);
-
-function animate()
+    modelLoaded =
