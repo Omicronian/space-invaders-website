@@ -5,68 +5,22 @@
   <title>Falcon 9</title>
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <style>
-    body{margin:0;overflow:hidden;background:#000}
+    body,html{margin:0;height:100vh;background:#000}
+    model-viewer{width:100%;height:100%}
   </style>
+  <script type="module" src="https://unpkg.com/@google/model-viewer/dist/model-viewer.min.js"></script>
 </head>
 <body>
 
-<script type="importmap">
-{"imports":{"three":"https://threejs.org/build/three.module.js","three/addons/":"https://threejs.org/examples/jsm/"}}
-</script>
+<model-viewer
+  src="assets/scene.gltf"
+  alt="Falcon 9"
+  auto-rotate
+  camera-controls
+  shadow-intensity="1"
+  exposure="0.8"
+  background-color="#000000">
+</model-viewer>
 
-<script type="module">
-import * as THREE from 'three';
-import {GLTFLoader} from 'three/addons/loaders/GLTFLoader.js';
-
-const scene    = new THREE.Scene();
-const camera   = new THREE.PerspectiveCamera(45, innerWidth/innerHeight, 0.1, 1000);
-const renderer = new THREE.WebGLRenderer({antialias:true});
-renderer.setSize(innerWidth, innerHeight);
-renderer.setPixelRatio(devicePixelRatio);
-document.body.appendChild(renderer.domElement);
-
-// Better lighting (fixed chaining error)
-const ambientLight = new THREE.AmbientLight(0xffffff, 2.0);  // Brighter ambient for textures
-scene.add(ambientLight);
-
-const directionalLight = new THREE.DirectionalLight(0xffffff, 2);
-directionalLight.position.set(50, 100, 50);  // Split: create first, then set position
-scene.add(directionalLight);
-
-// Load YOUR actual model + textures
-new GLTFLoader()
-  .setPath('assets/')
-  .load('scene.gltf',
-    (gltf) => {
-      const rocket = gltf.scene;
-      rocket.scale.set(4, 4, 4);
-      scene.add(rocket);
-    },
-    undefined,
-    () => {
-      // Fallback chrome rocket if GLTF fails
-      const fallback = new THREE.Mesh(
-        new THREE.CylinderGeometry(2.5, 2.5, 100, 64),
-        new THREE.MeshPhysicalMaterial({color:0xcccccc, metalness:1, roughness:0.1})
-      );
-      scene.add(fallback);
-    }
-  );
-
-// Static centered camera
-camera.position.set(0, 10, 120);
-camera.lookAt(0, 0, 0);
-
-// Render once (static)
-renderer.render(scene, camera);
-
-// Resize
-window.addEventListener('resize', () => {
-  camera.aspect = innerWidth/innerHeight;
-  camera.updateProjectionMatrix();
-  renderer.setSize(innerWidth, innerHeight);
-  renderer.render(scene, camera);
-});
-</script>
 </body>
 </html>
