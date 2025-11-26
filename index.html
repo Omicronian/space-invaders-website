@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
 <meta charset="UTF-8">
-<title>Falcon 9 – Real Model Guaranteed</title>
+<title>Falcon 9 – Clean & Perfect</title>
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <style>body{margin:0;overflow:hidden;background:#000}</style>
 </head>
@@ -23,23 +23,26 @@ renderer.setSize(innerWidth, innerHeight);
 renderer.setPixelRatio(devicePixelRatio);
 document.body.appendChild(renderer.domElement);
 
+// Lighting
 scene.add(new THREE.AmbientLight(0x404060, 2));
-scene.add(new THREE.DirectionalLight(0xffffff, 3).position.set(100,100,100));
+const sun = new THREE.DirectionalLight(0xffffff, 3);
+sun.position.set(100, 100, 100);
+scene.add(sun);
 
 // Stars
 scene.add(new THREE.Points(
-  new THREE.BufferGeometry().setAttribute('position', new THREE.Float32BufferAttribute(
-    Float32Array.from({length:30000},()=>THREE.MathUtils.randFloatSpread(2000)),3)),
+  new THREE.BufferGeometry().setAttribute('position',
+    new THREE.Float32BufferAttribute(Float32Array.from({length:30000},()=>THREE.MathUtils.randFloatSpread(2000)),3)),
   new THREE.PointsMaterial({color:0xffffff,size:1})
 ));
 
-// Rocket group
+// Rocket container
 const rocket = new THREE.Group();
-rocket.rotation.y = Math.PI/2;   // horizontal
-rocket.position.x = -100;
+rocket.rotation.y = Math.PI/2;
+rocket.position.x = -120;
 scene.add(rocket);
 
-// Flames
+// Engine flames
 const flameGeo = new THREE.BufferGeometry();
 const pos = new Float32Array(9000);
 for(let i=0;i<3000;i++){
@@ -66,54 +69,33 @@ const flames = new THREE.Points(flameGeo, new THREE.ShaderMaterial({
 flames.position.y = -28;
 rocket.add(flames);
 
-// THIS IS THE ONLY PART THAT MATTERS:
+// LOAD YOUR REAL MODEL – FIXED
 const loader = new GLTFLoader();
+loader.setPath('assets/');
 
-// Try every possible filename you might have
-const possibleNames = ['scene.gltf', 'falcon9.gltf', 'model.gltf', 'Falcon9.gltf', 'scene.glb'];
-
-let loaded = false;
-for(const name of possibleNames){
-  loader.setPath('assets/');
-  loader.load(name,
-    (gltf) => {
-      if(loaded) return;
-      loaded = true;
-      const model = gltf.scene || gltf;
-      model.scale.set(3.8,3.8,3.8);
-      rocket.add(model);
-      document.body.style.background = '#001122';
-    },
-    undefined,
-    () => {} // ignore errors for this attempt
-  );
-}
-
-// Final fallback (beautiful chrome rocket)
-setTimeout(() => {
-  if(!loaded){
+loader.load('scene.gltf', 
+  (gltf) => {
+    const model = gltf.scene;          // this is the correct Object3D
+    model.scale.set(3.8, 3.8, 3.8);
+    rocket.add(model);
+  },
+  undefined,
+  () => {
+    // Beautiful chrome fallback
     const fallback = new THREE.Mesh(
-      new THREE.CylinderGeometry(2.6,2.6,100,64),
-      new THREE.MeshPhysicalMaterial({color:0xeeeeee,metalness:1,roughness:0.08,clearcoat:1})
+      new THREE.CylinderGeometry(2.6, 2.6, 100, 64),
+      new THREE.MeshPhysicalMaterial({
+        color: 0xeeeeee,
+        metalness: 1,
+        roughness: 0.08,
+        clearcoat: 1,
+        clearcoatRoughness: 0
+      })
     );
     rocket.add(fallback);
   }
-}, 3000);
+);
 
-camera.position.set(-50,25,120);
+camera.position.set(-60, 30, 140);
 
-function animate(){
-  requestAnimationFrame(animate);
-  rocket.position.x += 0.9;
-  renderer.render(scene,camera);
-}
-animate();
-
-window.addEventListener('resize',()=>{
-  camera.aspect = innerWidth/innerHeight;
-  camera.updateProjectionMatrix();
-  renderer.setSize(innerWidth,innerHeight);
-});
-</script>
-</body>
-</html>
+function animate()
