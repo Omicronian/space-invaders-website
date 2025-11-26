@@ -1,0 +1,40 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="UTF-8">
+  <title>Falcon 9 & Moon</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <style>
+    body,html{margin:0;height:100vh;background:#000;overflow:hidden;position:relative}
+    model-viewer{width:60%;height:80%;position:absolute;bottom:5%;left:50%;transform:translateX(-50%)}
+    .moon{
+      position:absolute;top:10%;right:8%;width:180px;height:180px;
+      background:#ddd;border-radius:50%;box-shadow:0 0 60px #fff,inset -30px -30px 40px rgba(0,0,0,0.6);
+      background-image:url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100"><circle cx="70" cy="30" r="12" fill="%23999"/><circle cx="40" cy="60" r="15" fill="%23888"/><circle cx="80" cy="70" r="10" fill="%23aaa"/></svg>');
+      background-size:80%;
+      background-repeat:no-repeat;
+      background-position:center;
+      opacity:0.95;
+    }
+  </style>
+  <script type="module" src="https://unpkg.com/@google/model-viewer/dist/model-viewer.min.js"></script>
+</head>
+<body>
+
+<!-- Smaller, nicely positioned Falcon 9 -->
+<model-viewer
+  src="assets/scene.gltf"
+  alt="Falcon 9"
+  auto-rotate
+  rotation-per-second="8deg"
+  camera-controls
+  shadow-intensity="1"
+  exposure="0.9"
+  background-color="#000000">
+</model-viewer>
+
+<!-- Small moon in top-right -->
+<div class="moon"></div>
+
+</body>
+</html>
