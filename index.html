@@ -2,7 +2,7 @@
 <html>
 <head>
   <meta charset="UTF-8">
-  <title>Falcon 9 – SpaceX Logo Visible</title>
+  <title>Falcon 9 to Mars</title>
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <style>
     body,html{margin:0;height:100vh;background:#000;overflow:hidden;position:relative}
@@ -11,20 +11,22 @@
       position:absolute;bottom:5%;left:50%;
       transform:translateX(-50%);
     }
-    .moon{
-      position:absolute;top:10%;right:8%;width:180px;height:180px;
-      background:#ddd;border-radius:50%;
-      box-shadow:0 0 60px #fff,inset -30px -30px 40px rgba(0,0,0,0.6);
-      background-image:url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100"><circle cx="70" cy="30" r="12" fill="%23999"/><circle cx="40" cy="60" r="15" fill="%23888"/><circle cx="80" cy="70" r="10" fill="%23aaa"/></svg>');
-      background-size:80%;background-repeat:no-repeat;background-position:center;
-      opacity:0.95;
+    .mars{
+      position:absolute;
+      top:10%;right:8%;
+      width:200px;height:200px;
+      border-radius:50%;
+      background:url('https://upload.wikimedia.org/wikipedia/commons/0/02/OSIRIS_Mars_true_color.jpg') center/cover;
+      box-shadow:0 0 80px #ff440088, inset -40px -40px 60px rgba(0,0,0,0.7);
+      opacity:0.98;
+      background-blend-mode:overlay;
     }
   </style>
   <script type="module" src="https://unpkg.com/@google/model-viewer/dist/model-viewer.min.js"></script>
 </head>
 <body>
 
-<!-- Rocket rotated 90° clockwise so "SpaceX" logo is perfectly visible -->
+<!-- Falcon 9 with SpaceX logo clearly visible -->
 <model-viewer
   src="assets/scene.gltf"
   alt="Falcon 9"
@@ -39,8 +41,8 @@
   background-color="#000000">
 </model-viewer>
 
-<!-- Moon in top-right -->
-<div class="moon"></div>
+<!-- Mars in top-right -->
+<div class="mars"></div>
 
 </body>
 </html>
