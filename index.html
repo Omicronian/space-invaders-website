@@ -2,14 +2,10 @@
 <html lang="en">
 <head>
 <meta charset="UTF-8">
-<title>SpaceX Falcon 9 – Photorealistic Horizontal Flight</title>
+<title>Falcon 9 Photorealistic Horizontal Inferno</title>
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<style>
-  body { margin:0; overflow:hidden; background:#000; }
-  canvas { display:block; }
-</style>
+<style>body{margin:0;overflow:hidden;background:#000}canvas{display:block}</style>
 
-<!-- Proven working Three.js + post-processing (non-module) -->
 <script src="https://cdn.jsdelivr.net/npm/three@0.167.1/build/three.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/three@0.167.1/examples/js/loaders/GLTFLoader.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/three@0.167.1/examples/js/postprocessing/EffectComposer.js"></script>
@@ -19,65 +15,63 @@
 <body>
 
 <script>
-// Scene setup
+// Scene
 const scene = new THREE.Scene();
 const camera = new THREE.PerspectiveCamera(65, innerWidth/innerHeight, 0.1, 2000);
-const renderer = new THREE.WebGLRenderer({antialias:true, alpha:false});
+const renderer = new THREE.WebGLRenderer({antialias:true});
 renderer.setSize(innerWidth, innerHeight);
 renderer.setPixelRatio(devicePixelRatio);
 renderer.shadowMap.enabled = true;
 document.body.appendChild(renderer.domElement);
 
-// Post-processing + bloom
+// Post-processing
 const composer = new THREE.EffectComposer(renderer);
 composer.addPass(new THREE.RenderPass(scene, camera));
-const bloomPass = new THREE.UnrealBloomPass(new THREE.Vector2(innerWidth, innerHeight), 1.6, 0.4, 0.85);
-composer.addPass(bloomPass);
+const bloom = new THREE.UnrealBloomPass(new THREE.Vector2(innerWidth, innerHeight), 1.6, 0.4, 0.85);
+composer.addPass(bloom);
 
 // Lighting
-scene.add(new THREE.AmbientLight(0x404060, 0.8));
-const sun = new THREE.DirectionalLight(0xfff0ea, 2);
-sun.position.set(15, 20, 15);
+scene.add(new THREE.AmbientLight(0x404060, 1));
+const sun = new THREE.DirectionalLight(0xfff0ea, 2.5);
+sun.position.set(20,30,20);
 sun.castShadow = true;
 scene.add(sun);
 
 // Stars
-const starsGeo = new THREE.BufferGeometry();
-const starsMat = new THREE.PointsMaterial({color:0xffffff, size:0.7});
+const stars = new THREE.BufferGeometry();
 const verts = [];
-for(let i=0;i<15000;i++) verts.push(THREE.MathUtils.randFloatSpread(2000), THREE.MathUtils.randFloatSpread(2000), THREE.MathUtils.randFloatSpread(2000));
-starsGeo.setAttribute('position', new THREE.Float32BufferAttribute(verts,3));
-scene.add(new THREE.Points(starsGeo, starsMat));
+for(let i=0;i<20000;i++) verts.push(THREE.MathUtils.randFloatSpread(3000),THREE.MathUtils.randFloatSpread(3000),THREE.MathUtils.randFloatSpread(3000));
+stars.setAttribute('position', new THREE.Float32BufferAttribute(verts,3));
+scene.add(new THREE.Points(stars, new THREE.PointsMaterial({color:0xffffff,size:0.7})));
 
-// Rocket group (will hold either real model or fallback)
+// Rocket container
 const rocket = new THREE.Group();
-rocket.position.set(-70, 0, 0);
-rocket.rotation.y = Math.PI / 2; // horizontal flight
+rocket.position.set(-80, 0, 0);
+rocket.rotation.y = Math.PI / 2; // horizontal
 scene.add(rocket);
 
-// === Volumetric Raptor flames (4000 particles) ===
-const flameCount = 4000;
+// Volumetric flames
 const flameGeo = new THREE.BufferGeometry();
-const pos = new Float32Array(flameCount*3);
-const size = new Float32Array(flameCount);
-for(let i=0;i<flameCount;i++){
-  pos[i*3]   = (Math.random()-0.5)*5;
-  pos[i*3+1] = -Math.random()*25;
-  pos[i*3+2] = (Math.random()-0.5)*5;
-  size[i] = Math.random()*3 + 1;
+const flamePos = new Float32Array(5000*3);
+const flameSize = new Float32Array(5000);
+for(let i=0;i<5000;i++){
+  flamePos[i*3]   = (Math.random()-0.5)*6;
+  flamePos[i*3+1] = -Math.random()*30;
+  flamePos[i*3+2] = (Math.random()-0.5)*6;
+  flameSize[i] = Math.random()*4 + 2;
 }
-flameGeo.setAttribute('position', new THREE.BufferAttribute(pos,3));
-flameGeo.setAttribute('size', new THREE.BufferAttribute(size,1));
+flameGeo.setAttribute('position', new THREE.BufferAttribute(flamePos,3));
+flameGeo.setAttribute('size', new THREE.BufferAttribute(flameSize,1));
 
 const flameMat = new THREE.ShaderMaterial({
-  uniforms:{ time:{value:0}, color:{value:new THREE.Color(0xffaa33)} },
+  uniforms:{time:{value:0},color:{value:new THREE.Color(0xffaa33)}},
   vertexShader:`
     attribute float size;
     varying float vAlpha;
     void main(){
       vec4 mv = modelViewMatrix * vec4(position,1.0);
-      gl_PointSize = size * 350.0 / -mv.z;
-      vAlpha = clamp(1.0 - (position.y / -25.0), 0.0, 1.0);
+      gl_PointSize = size * 400.0 / -mv.z;
+      vAlpha = clamp(1.0 - (position.y / -30.0),0.0,1.0);
       gl_Position = projectionMatrix * mv;
     }`,
   fragmentShader:`
@@ -87,81 +81,51 @@ const flameMat = new THREE.ShaderMaterial({
       if(length(gl_PointCoord-vec2(0.5))>0.5) discard;
       gl_FragColor = vec4(color, vAlpha);
     }`,
-  transparent:true,
-  blending:THREE.AdditiveBlending,
-  depthWrite:false
+  transparent:true, blending:THREE.AdditiveBlending, depthWrite:false
 });
 
 const flames = new THREE.Points(flameGeo, flameMat);
-flames.position.set(0, -16, 0); // engine position
+flames.position.set(0,-17,0);
 flames.visible = false;
 rocket.add(flames);
 
-// === Load real GLTF model (with textures) ===
+// LOAD YOUR EXACT MODEL + TEXTURES
 const loader = new THREE.GLTFLoader();
-let modelLoaded = false;
-
-loader.load(
-  'assets/falcon9.gltf',   // make sure this path + textures folder exists!
-  (gltf) => {
-    const model = gltf.scene;
-    model.scale.set(2.2, 2.2, 2.2);
-    model.traverse(n => { if(n.isMesh){ n.castShadow = n.receiveShadow = true; }});
-    rocket.add(model);
-    modelLoaded = true;
-    console.log("Real Falcon 9 model loaded successfully!");
-  },
-  undefined,
-  (err) => {
-    console.warn("GLTF failed to load – using beautiful procedural rocket instead", err);
-    createProceduralRocket();
-  }
-);
-
-// === Fallback procedural rocket (still looks amazing) ===
-function createProceduralRocket(){
-  const metal = new THREE.MeshStandardMaterial({color:0xeeeeee, metalness:0.95, roughness:0.12});
-  const black = new THREE.MeshStandardMaterial({color:0x111111});
-
-  const stage1 = new THREE.Mesh(new THREE.CylinderGeometry(1.85,1.85,28,64), metal);
-  stage1.castShadow = stage1.receiveShadow = true;
-  rocket.add(stage1);
-
-  const interstage = new THREE.Mesh(new THREE.CylinderGeometry(1.85,1.85,2,64), black);
-  interstage.position.y = 15;
-  rocket.add(interstage);
-
-  const stage2 = new THREE.Mesh(new THREE.CylinderGeometry(1.85,1.85,20,64), metal);
-  stage2.position.y = 26;
-  rocket.add(stage2);
-
-  const nose = new THREE.Mesh(new THREE.SphereGeometry(1.85,64,32,0,Math.PI*2,0,Math.PI/2), metal);
-  nose.rotation.x = -Math.PI/2;
-  nose.position.y = 36;
-  rocket.add(nose);
-}
+loader.setPath('assets/');                 // ← this tells Three.js where textures live
+loader.load('scene.gltf', (gltf) => {      // ← exact filename
+  const model = gltf.scene;
+  model.scale.set(2.5,2.5,2.5);
+  model.traverse(child => {
+    if(child.isMesh){
+      child.castShadow = child.receiveShadow = true;
+    }
+  });
+  rocket.add(model);
+  console.log("Real Falcon 9 loaded with your 3 textures!");
+}, undefined, (err) => {
+  console.error("Model failed → using procedural fallback", err);
+  // simple fallback cylinder so you never see blank page
+  rocket.add(new THREE.Mesh(new THREE.CylinderGeometry(2,2,50,64), 
+    new THREE.MeshStandardMaterial({color:0xcccccc,metalness:0.9,roughness:0.1})));
+});
 
 // Camera
-camera.position.set(-30, 12, 50);
+camera.position.set(-30,15,60);
 
-// Animation loop
+// Animation
 let t = 0;
 function animate(){
   requestAnimationFrame(animate);
   t += 0.016;
 
-  // Fly across screen
-  rocket.position.x = -70 + t*10;
+  rocket.position.x = -80 + t*11;          // cross screen in ~12s
+  if(t>3) flames.visible = true;
 
-  // Start engines
-  if(t > 2.5) flames.visible = true;
-
-  // INFERNO at the end
-  if(t > 12){
-    bloomPass.strength = 6 + Math.sin(t*40)*4;
-    flameMat.uniforms.color.value.set(0xff2200);
-    camera.position.x += (Math.random()-0.5)*4;
-    camera.position.y += (Math.random()-0.5)*2;
+  if(t>12){
+    bloom.strength = 7 + Math.sin(t*50)*5;
+    flameMat.uniforms.color.value.set(0xff1100);
+    camera.position.x += (Math.random()-0.5)*6;
+    camera.position.y += (Math.random()-0.5)*4;
   }
 
   flameMat.uniforms.time.value = t;
@@ -169,8 +133,8 @@ function animate(){
 }
 animate();
 
-// Resize handler
-window.addEventListener('resize',()=>{
+// Resize
+addEventListener('resize',()=>{
   camera.aspect = innerWidth/innerHeight;
   camera.updateProjectionMatrix();
   renderer.setSize(innerWidth,innerHeight);
