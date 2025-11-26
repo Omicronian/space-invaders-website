@@ -1,42 +1,14 @@
 <!DOCTYPE html>
-<html lang="en">
+<html>
 <head>
   <meta charset="UTF-8">
   <title>SpaceX Falcon 9</title>
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <style>
-    body {
-      margin: 0;
-      height: 100vh;
-      background: #000;
-      background-image: url('https://upload.wikimedia.org/wikipedia/commons/9/95/Falcon_9_Full_Thrust_Full_Resolution.jpg');
-      background-size: contain;
-      background-repeat: no-repeat;
-      background-position: center;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      overflow: hidden;
-    }
-    /* Subtle animated engine glow */
-    body::after {
-      content: "";
-      position: absolute;
-      bottom: 10%;
-      left: 50%;
-      transform: translateX(-50%);
-      width: 100px;
-      height: 250px;
-      background: radial-gradient(circle at 30% 20%, #ffffff 0%, #ffaa33 30%, #ff5500 60%, transparent 80%);
-      opacity: 0.6;
-      pointer-events: none;
-      animation: engineGlow 3s ease-in-out infinite alternate;
-    }
-    @keyframes engineGlow {
-      from { opacity: 0.5; transform: translateX(-50%) scaleY(1); }
-      to { opacity: 0.8; transform: translateX(-50%) scaleY(1.2); }
-    }
+    body,html{margin:0;height:100%;background:#000;display:flex;justify-content:center;align-items:center}
+    img{max-height:95vh;max-width:95vw}
   </style>
 </head>
-<body></body>
+<body>
+  <img src="https://upload.wikimedia.org/wikipedia/commons/thumb/3/39/Falcon_9_B1058_launching_Starlink_Group_6-48_%2853119328006%29_%28cropped%29.jpg/800px-Falcon_9_B1058_launching_Starlink_Group_6-48_%2853119328006%29_%28cropped%29.jpg" alt="SpaceX Falcon 9">
+</body>
 </html>
