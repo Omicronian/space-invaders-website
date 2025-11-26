@@ -5,58 +5,35 @@
 <title>SpaceX Falcon 9</title>
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <style>
-  body{margin:0;overflow:hidden;background:#000}
+  body {
+    margin: 0;
+    height: 100vh;
+    background: #000 url('https://spacex-images.s3.amazonaws.com/falcon9-full.jpg') center/cover no-repeat;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    overflow: hidden;
+  }
+  /* Optional subtle engine glow */
+  body::after {
+    content: "";
+    position: absolute;
+    bottom: 8%;
+    left: 50%;
+    transform: translateX(-50%);
+    width: 120px;
+    height: 300px;
+    background: radial-gradient(circle at top, #ffaa33 0%, #ff5500 30%, transparent 70%);
+    opacity: 0.7;
+    pointer-events: none;
+    animation: glow 4s infinite alternate;
+  }
+  @keyframes glow {
+    from { opacity: 0.6; transform: translateX(-50%) scaleY(1); }
+    to   { opacity: 0.9; transform: translateX(-50%) scaleY(1.15); }
+  }
 </style>
 </head>
 <body>
-
-<script type="importmap">
-{"imports":{"three":"https://threejs.org/build/three.module.js","three/addons/":"https://threejs.org/examples/jsm/"}}
-</script>
-
-<script type="module">
-import * as THREE from 'three';
-import {GLTFLoader} from 'three/addons/loaders/GLTFLoader.js';
-
-const scene    = new THREE.Scene();
-const camera   = new THREE.PerspectiveCamera(50, innerWidth/innerHeight, 0.1, 1000);
-const renderer = new THREE.WebGLRenderer({antialias:true});
-renderer.setSize(innerWidth, innerHeight);
-renderer.setPixelRatio(devicePixelRatio);
-document.body.appendChild(renderer.domElement);
-
-// Soft space lighting
-scene.add(new THREE.AmbientLight(0x404060, 2));
-scene.add(new THREE.DirectionalLight(0xffffff, 3).position.set(50, 80, 50));
-
-// Stars
-scene.add(new THREE.Points(
-  new THREE.BufferGeometry().setAttribute('position',
-    new THREE.Float32BufferAttribute(Float32Array.from({length:30000},()=>THREE.MathUtils.randFloatSpread(2000)),3)),
-  new THREE.PointsMaterial({color:0xffffff,size:1})
-));
-
-// Rocket group – centered
-const rocket = new THREE.Group();
-scene.add(rocket);
-
-// Very gentle engine glow (static)
-const glow = new THREE.Points(
-  new THREE.BufferGeometry().setAttribute('position',
-    new THREE.Float32BufferAttribute(Float32Array.from({length:900},()=>[(Math.random()-0.5)*8,-Math.random()*15,(Math.random()-0.5)*8]),3)),
-  new THREE.PointsMaterial({color:0xffaa33,size:8,transparent:true,opacity:0.8,blending:THREE.AdditiveBlending})
-);
-glow.position.y = -28;
-rocket.add(glow);
-
-// Try to load your real model
-const loader = new GLTFLoader();
-loader.setPath('assets/');
-
-let modelLoaded = false;
-loader.load('scene.gltf',
-  (gltf) => {
-    const model = gltf.scene;
-    model.scale.set(4,4,4);
-    rocket.add(model);
-    modelLoaded =
+</body>
+</html>
