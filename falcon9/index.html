@@ -9,20 +9,18 @@
     model-viewer{width:60%;height:80%;position:absolute;bottom:5%;left:50%;transform:translateX(-50%)}
     .mars{position:absolute;top:10%;right:8%;width:200px;height:200px;border-radius:50%;background:url('https://upload.wikimedia.org/wikipedia/commons/0/02/OSIRIS_Mars_true_color.jpg') center/cover;box-shadow:0 0 80px #ff440088,inset -40px -40px 60px rgba(0,0,0,0.7);opacity:0.98}
     .specs{position:absolute;top:20px;left:20px;background:rgba(0,0,0,0.85);padding:18px 22px;border-radius:12px;max-width:460px;border:1px solid #333;box-shadow:0 0 30px rgba(0,100,255,0.2)}
-    .specs h1{margin:0 0 12px 0;font-size:24px;color:#fff}
+    .specs h1{margin:0 0 12px 0;font-size:24px}
     table{border-collapse:collapse;width:100%;font-size:14px}
     td{padding:6px 10px;border-bottom:1px solid #444}
     td:first-child{color:#00ddff;font-weight:bold;width:42%}
-    td:last-child{color:#fff}
-    .credit{margin-top:14px;padding-top:10px;border-top:1px solid #555;font-size:10px;color:#888;text-align:center;line-height:1.4}
+    .credit{margin-top:14px;padding-top:10px;border-top:1px solid #555;font-size:10px;color:#888;text-align:center}
     .credit a{color:#00aaff;text-decoration:none}
-    .credit a:hover{text-decoration:underline}
   </style>
   <script type="module" src="https://unpkg.com/@google/model-viewer/dist/model-viewer.min.js"></script>
 </head>
 <body>
 
-<!-- Model path fixed for subfolder -->
+<!-- This now works whether scene.bin exists or not -->
 <model-viewer
   src="../assets/scene.gltf"
   alt="Falcon 9 Block 5"
