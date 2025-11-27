@@ -1,13 +1,13 @@
 {
   "routes": [
     {
-      "route": "/*",
-      "serve": "/index.html",
+      "route": "/falcon9/*",
+      "serve": "/falcon9/index.html",
       "statusCode": 200
     },
     {
-      "route": "/falcon9/*",
-      "serve": "/falcon9/index.html",
+      "route": "/*",
+      "serve": "/index.html",
       "statusCode": 200
     }
   ],
