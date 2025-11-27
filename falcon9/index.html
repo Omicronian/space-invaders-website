@@ -1,1 +1,61 @@
-a
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="UTF-8">
+  <title>Falcon 9 Block 5</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <style>
+    body,html{margin:0;height:100vh;background:#000;overflow:hidden;position:relative;color:#fff;font-family:Arial,Helvetica,sans-serif}
+    model-viewer{width:60%;height:80%;position:absolute;bottom:5%;left:50%;transform:translateX(-50%)}
+    .mars{position:absolute;top:10%;right:8%;width:200px;height:200px;border-radius:50%;background:url('https://upload.wikimedia.org/wikipedia/commons/0/02/OSIRIS_Mars_true_color.jpg') center/cover;box-shadow:0 0 80px #ff440088,inset -40px -40px 60px rgba(0,0,0,0.7);opacity:0.98}
+    .specs{position:absolute;top:20px;left:20px;background:rgba(0,0,0,0.85);padding:18px 22px;border-radius:12px;max-width:460px;border:1px solid #333;box-shadow:0 0 30px rgba(0,100,255,0.2)}
+    .specs h1{margin:0 0 12px 0;font-size:24px}
+    table{border-collapse:collapse;width:100%;font-size:14px}
+    td{padding:6px 10px;border-bottom:1px solid #444}
+    td:first-child{color:#00ddff;font-weight:bold;width:42%}
+    .credit{margin-top:14px;padding-top:10px;border-top:1px solid #555;font-size:10px;color:#888;text-align:center}
+    .credit a{color:#00aaff;text-decoration:none}
+  </style>
+  <script type="module" src="https://unpkg.com/@google/model-viewer/dist/model-viewer.min.js"></script>
+</head>
+<body>
+
+<!-- This now works whether scene.bin exists or not -->
+<model-viewer
+  src="../assets/scene.gltf"
+  alt="Falcon 9 Block 5"
+  auto-rotate
+  rotation-per-second="8deg"
+  camera-controls
+  shadow-intensity="1"
+  exposure="0.9"
+  camera-orbit="0deg 75deg 120%"
+  orientation="0 0 -90deg"
+  background-color="#000000"
+  poster="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mNkYPhfDwAChwGA60e6kgAAAABJRU5ErkJggg==">
+  <script nomodule src="https://unpkg.com/@google/model-viewer/dist/model-viewer-legacy.js"></script>
+</model-viewer>
+
+<div class="mars"></div>
+
+<div class="specs">
+  <h1>SpaceX Falcon 9 Block 5</h1>
+  <table>
+    <tr><td>Height</td><td>70 m (229.6 ft) with payload fairing</td></tr>
+    <tr><td>Diameter</td><td>3.66 m (12 ft)</td></tr>
+    <tr><td>Stages</td><td>2</td></tr>
+    <tr><td>Thrust (1st stage · sea level)</td><td>~7.6 MN (1.7 million lbf)</td></tr>
+    <tr><td>Payload to LEO (expendable)</td><td>22,800 kg (50,300 lb)</td></tr>
+    <tr><td>Reusability</td><td>First stage fully reusable</td></tr>
+    <tr><td>Total Launches (as of 2025)</td><td>300+</td></tr>
+    <tr><td>Booster Recoveries (as of 2025)</td><td>260+</td></tr>
+    <tr><td>Status</td><td>World’s most-flown operational rocket</td></tr>
+  </table>
+  <div class="credit">
+    ORIGINAL 3D MODEL: Stanley Creative | 
+    <a href="https://sketchfab.com/Stanley_Creative" target="_blank">https://sketchfab.com/Stanley_Creative</a>
+  </div>
+</div>
+
+</body>
+</html>
