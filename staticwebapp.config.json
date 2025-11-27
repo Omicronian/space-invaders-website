@@ -1,0 +1,18 @@
+{
+  "routes": [
+    {
+      "route": "/*",
+      "serve": "/index.html",
+      "statusCode": 200
+    },
+    {
+      "route": "/falcon9/*",
+      "serve": "/falcon9/index.html",
+      "statusCode": 200
+    }
+  ],
+  "mimeTypes": {
+    ".gltf": "model/gltf+json",
+    ".bin": "application/octet-stream"
+  }
+}
